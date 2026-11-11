@@ -8,7 +8,7 @@ The tests of the standard library live in the `xl-std` repository (`xl-std/test/
 
 ```
 xl-std/test/unit/run.sh [xlc]           # build and run every suite on the host
-xlang test xl-std/test/unit/for.test.xl # one file with the xlang CLI
+xl test xl-std/test/unit/for.test.xl # one file with the xlang CLI
 ```
 
 `xl-std/test/unit/` holds suites written in xlang itself, using `std/testing`. A file is a test when it is named `*.test.xl` and has an `@entry fn main() -> i32` that ends in `suiteRun(&s)`; a non-zero exit status fails the file. The runner accepts a file, a directory, a glob (`**`, `*`, `?`), `re:<regex>` or a path substring.

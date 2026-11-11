@@ -6,14 +6,14 @@ The original plan is implemented except the items below, which are intentionally
 
 ## Platform support
 
-- **Compiler distribution:** prebuilt compilers (install script, `xlang self-update`, Homebrew tap) exist for
+- **Compiler distribution:** prebuilt compilers (install script, `xl self-update`, Homebrew tap) exist for
   macOS and Linux on arm64/amd64 only. There is no native Windows build of the compiler (it uses POSIX
   process and file APIs); Windows hosts use WSL. `self-update` and `scripts/install.sh` shell out to `curl`,
   `tar` and `sha256sum`/`shasum` instead of embedding an HTTP/TLS client and an archive reader; they verify
   the SHA-256 from the release's `checksums.txt`, which comes from the same GitHub release as the archive
   (integrity against corruption, not a signature). `self-update` never touches a Homebrew-managed binary.
   No release exists until the first `v*` tag is pushed. Options: embed a TLS client, sign releases.
-- **Shell completion setup:** `xlang completions install` appends its block at the end of `~/.zshrc` and
+- **Shell completion setup:** `xl completions install` appends its block at the end of `~/.zshrc` and
   `~/.bash_profile`/`~/.bashrc`. If a user's own `compinit` runs after the end of `.zshrc` (rare), the zsh
   registration can be reset; move the block above it. bash completion needs no `bash-completion` package
   (it uses plain `complete -F`). Terminal emulators that start non-login bash on macOS read `~/.bashrc`, not
@@ -101,7 +101,7 @@ The original plan is implemented except the items below, which are intentionally
 - Payload enums (sum types): the parser turns `enum E { A(T), B }` into ordinary items: the struct `E` (`tag`, `data`), the
   value enum `E$Tag`, the union struct `E$Data` and one struct `E$A` per variant with data. The union is not a language
   feature: only the compiler-made `E$Data` has `is_union` (all fields at offset 0), there is no `union` keyword. The
-  names with `$` are visible in `xlang layout`; diagnostics name the enum, not its parts (a droppable array of a
+  names with `$` are visible in `xl layout`; diagnostics name the enum, not its parts (a droppable array of a
   payload enum is `E0759`, and a droppable payload enum in a global or struct field is `E0758`). A droppable payload
   is allowed: the enum owns it and its drop glue drops only the live variant's value.
   A generic payload enum is one type made of those items: `Result<T, E>` makes `Result<i32, MyErr>` and, with it, the
@@ -192,13 +192,13 @@ such a chain of `export *` re-exports has been reported as not visible through `
   `std/**/*.xl` changes); `--std=<dir>`, `--std=host/user/repo[@tag]` and `[std]` in `xlang.toml` replace it.
   The compiler never searches the file system for it.
 
-## Packages (`xlang package`, `xlang.toml`, `xlang.lock`)
+## Packages (`xl install`, `xlang.toml`, `xlang.lock`)
 
 Decisions taken when the package system was added ([Packages](/compiler/packages/) is the reference):
 
 - **Git is the registry.** Packages are tags of git repositories, fetched by running the `git` executable
   (`ls-remote`, `clone --depth 1`); no HTTP client, no hosting API, no search, no publish command. Builds
-  never fetch: `xlang package install` is the only command that uses the network. Go-style auto-download
+  never fetch: `xl install` is the only command that uses the network. Go-style auto-download
   on build was rejected to keep builds offline and deterministic.
 - **Integrity is the commit hash** recorded in `xlang.lock` (tag moved or cache edited = error). There are no
   content checksums or signatures; a compromised host or a force-pushed first download is not detected.
@@ -226,7 +226,7 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
 - **Package identity is the repository path.** A repository that moves hosts needs a `source` override or a
   rename of the import paths. Git `submodules` are not fetched. LFS files are not fetched.
 - **Cache is per project** (`<root>/.xlang/cache`), not shared between projects, and old versions are never
-  pruned automatically (`xlang package clean` deletes all).
+  pruned automatically (`xl clean` deletes all).
 - **POSIX hosts only** (fork/exec, `file://` URLs); the compiler has no native Windows build either.
 - **`install` can leave downloaded sources in the cache** when a later package of the same run fails; the
   manifest and lock are untouched in that case.
@@ -282,12 +282,12 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
   compiled, so separately compiled modules (`only_module`) are not unwound through; a function with `defer`, drops or
   `try` keeps every local in memory and is never inlined; a panic with no `try` runs no cleanup. Verified on macOS
   arm64 and Linux arm64/x86-64; `try` is an error on Windows (register snapshot not written). A cleanup that itself
-  panics while unwinding is not handled. `xlang test` still ends the file's run on a `panic`; it does not use `try` yet.
+  panics while unwinding is not handled. `xl test` still ends the file's run on a `panic`; it does not use `try` yet.
   The compiler hooks this adds (`unwind` role, `__builtin_unwindPads`, `__builtin_unwindPadCount`, the `try` snapshot asm)
   are the only compiler knowledge of unwinding; the walker, registry and message copy are stdlib.
 - **A failed expectation does not stop the test** (no unwinding); a `panic` ends the whole file's run, which
-  `xlang test` reports as that file failing.
-- **`xlang test` runs files sequentially** (no `--jobs`) and has no per-test name filter; granularity is the
+  `xl test` reports as that file failing.
+- **`xl test` runs files sequentially** (no `--jobs`) and has no per-test name filter; granularity is the
   file. Windows is not supported by the runner (POSIX `fork`).
 
 ## Std cryptography (`std/crypto`)

@@ -77,7 +77,7 @@ export fn add(a: i32, b: i32) -> i32 {
 - `@fini` marks a module-level teardown function with the same form and rules as `@init`. It runs after `@entry`, in the reverse of the `@init` order. In a shared library it runs at unload; in a static library or object file the host calls `_xl_finiAll`. Each attribute is optional, and a library may use either one alone.
 - Calling an `@init`, `@fini` or `@entry` function, or using its name as a value, is error `E0727`. `@init` and `@fini` on a class method, on a generic or non-function item, or on a function with parameters or a return type are `E0729`. A bodyless `@init fn boot();` is the parser's error `E0002`.
 - The entry symbols (`_start`, `mainCRTStartup`) and `_xl_initAll` are compiler-owned: a user `export(c)`, `@mangle` or `declare` that uses one of these names is `E0726`.
-- Without an `@entry` function no entry stub is emitted. Building such a file as an executable (`--emit=exe`, and therefore `xlang run`) is `E0739`; library modules are built with `--emit=obj`, `--emit=static` or `--emit=shared`. `--emit=ir`, `bc` and `header` do not raise `E0754`.
+- Without an `@entry` function no entry stub is emitted. Building such a file as an executable (`--emit=exe`, and therefore `xl run`) is `E0739`; library modules are built with `--emit=obj`, `--emit=static` or `--emit=shared`. `--emit=ir`, `bc` and `header` do not raise `E0754`.
 - Entry stubs exist for Linux and macOS on x86_64 and aarch64, and for Windows on x86_64.
 
 ---
@@ -488,7 +488,7 @@ Memory-related defaults can be changed with `--std-features` (for example `-defa
 
 ## Testing
 
-`xlang test` finds `*.test.xl` files, builds and runs each one, and fails a file when its exit status is not 0. A test file uses `std/testing`:
+`xl test` finds `*.test.xl` files, builds and runs each one, and fails a file when its exit status is not 0. A test file uses `std/testing`:
 
 ```
 from "std/testing" import Suite, T, suiteInit, test, suiteRun, expectEq
@@ -510,19 +510,19 @@ Matchers are typed functions (`expect`, `expectTrue`, `expectEq`, `expectEqUInt`
 ## Command line
 
 ```
-xlang build file.xl [-o out] [--emit exe|obj|ir|bc|header|static|shared]
-xlang run file.xl
-xlang check file.xl
-xlang parse file.xl
-xlang layout file.xl [Type]
-xlang test [patterns...]
-xlang package install|update|remove|list|clean
-xlang completions bash|zsh|fish|install
-xlang self-update [--check]
-xlang --explain E0501
+xl build file.xl [-o out] [--emit exe|obj|ir|bc|header|static|shared]
+xl run file.xl
+xl check file.xl
+xl parse file.xl
+xl layout file.xl [Type]
+xl test [patterns...]
+xl install|update|remove|list|clean
+xl completions bash|zsh|fish|install
+xl self-update [--check]
+xl --explain E0501
 ```
 
-Common flags: `-D`/`-U`, `--target <triple>`, `-O 0..3`, `-g`, `--cpu`, `--mangle xl|none`, `--safety checked|unchecked`, `--no-std`, `--std <dir|host|user|repo[@tag]>`, `--std-features`, `--layout-scheme`, `--layout-history`, `--incremental`, `--cache-dir`, `--print-cfg`, `--context N`, `--allow`/`--deny`/`--warn-all`/`--allow-all`, `--diag-format text|json`. Global: `--version`, `--color auto|always|never` (see [Installing the compiler](/compiler/install/)). `xlang self-update` installs the latest release.
+Common flags: `-D`/`-U`, `--target <triple>`, `-O 0..3`, `-g`, `--cpu`, `--mangle xl|none`, `--safety checked|unchecked`, `--no-std`, `--std <dir|host|user|repo[@tag]>`, `--std-features`, `--layout-scheme`, `--layout-history`, `--incremental`, `--cache-dir`, `--print-cfg`, `--context N`, `--allow`/`--deny`/`--warn-all`/`--allow-all`, `--diag-format text|json`. Global: `--version`, `--color auto|always|never` (see [Installing the compiler](/compiler/install/)). `xl self-update` installs the latest release.
 
 Diagnostics have codes: `E` for errors, `W` for warnings (for example `E0501`, `W0402`); `--explain CODE` prints the long explanation, and warnings are controlled with `--allow`, `--deny` and `@allow`.
 

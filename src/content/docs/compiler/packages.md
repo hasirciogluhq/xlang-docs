@@ -2,7 +2,7 @@
 title: xlang Packages
 ---
 
-A package is a git repository of plain `.xl` source. `xlang package install github.com/user/repo` downloads its newest release into the project, and `import "github.com/user/repo"` uses it. That is the whole system.
+A package is a git repository of plain `.xl` source. `xl install github.com/user/repo` downloads its newest release into the project, and `import "github.com/user/repo"` uses it. That is the whole system.
 
 ## Vision
 
@@ -59,7 +59,7 @@ Packages are versioned by git tags and nothing else; there is no version field t
 
 - A release tag is `vMAJOR.MINOR.PATCH` or `MAJOR.MINOR.PATCH`: `v1.2.0`, `1.2.0`. `v` is lowercase, all three numbers are required.
 - A tag with a suffix after `-` (`v1.2.0-rc.1`) is a pre-release. It is never chosen as `latest`; it is installed only when named exactly.
-- A tag whose suffix ends in `test` (`v1.2.0-test`, `v1.2.0-rc-test`) is a test tag. It is never chosen as `latest`, like any pre-release, but it installs when named: `xlang package install host/user/repo@v1.2.0-test`.
+- A tag whose suffix ends in `test` (`v1.2.0-test`, `v1.2.0-rc-test`) is a test tag. It is never chosen as `latest`, like any pre-release, but it installs when named: `xl install host/user/repo@v1.2.0-test`.
 - `latest` (the default when no version is given) means the highest **stable** release (numeric order, so `v1.10.0` beats `v1.9.0`). Tags that are not versions (`main`, `nightly`), pre-releases and test tags are ignored when looking for it. It never falls back to them: a repository with no stable release tag fails with `E0744` and nothing is written.
 - Naming a version that breaks the format (`"main"`, `"1.2"`) in `xlang.toml` or on the command line is `E0742`, before anything is downloaded.
 - `v1.0.0` and `1.0.0` are the same version; if both exist, the `v` spelling is used.
@@ -71,19 +71,19 @@ All commands act on the `xlang.toml` found from the current directory (`install`
 
 | Command | Effect |
 |---------|--------|
-| `xlang package install` | Download everything `xlang.toml` lists (and what those packages list), write `xlang.lock`. With a lock, the locked versions and commits are used; the network is touched only for what the cache lacks. |
-| `xlang package install host/user/repo` | Add the repository at its newest stable release; the exact tag is written to `xlang.toml`. |
-| `xlang package install host/user/repo@v1.2.0` | Add that exact tag. Any tag of the version format works, including pre-release and `-test` tags (`@v1.2.0-test`). An existing entry keeps its `source`. |
-| `xlang package install --std=host/user/std[@tag]` | Record the repository as `[std]` and download it. |
-| `xlang package install --update` | Ignore the lock for `latest` entries. |
-| `xlang package update [repository...]` | Move all (or the named) git dependencies and a git `[std]` to their newest stable release, rewriting their versions in `xlang.toml`. |
-| `xlang package remove repository...` | Delete the entry from `xlang.toml` and refresh the lock. Cached sources stay until `clean`. |
-| `xlang package list` | Show each package with its version and commit, `[std]`, and `[indirect]` for packages only another package needs. Exit status 1 when something is missing. |
-| `xlang package clean` | Delete `.xlang/cache`. |
+| `xl install` | Download everything `xlang.toml` lists (and what those packages list), write `xlang.lock`. With a lock, the locked versions and commits are used; the network is touched only for what the cache lacks. |
+| `xl install host/user/repo` | Add the repository at its newest stable release; the exact tag is written to `xlang.toml`. |
+| `xl install host/user/repo@v1.2.0` | Add that exact tag. Any tag of the version format works, including pre-release and `-test` tags (`@v1.2.0-test`). An existing entry keeps its `source`. |
+| `xl install --std=host/user/std[@tag]` | Record the repository as `[std]` and download it. |
+| `xl install --update` | Ignore the lock for `latest` entries. |
+| `xl update [repository...]` | Move all (or the named) git dependencies and a git `[std]` to their newest stable release, rewriting their versions in `xlang.toml`. |
+| `xl remove repository...` | Delete the entry from `xlang.toml` and refresh the lock. Cached sources stay until `clean`. |
+| `xl list` | Show each package with its version and commit, `[std]`, and `[indirect]` for packages only another package needs. Exit status 1 when something is missing. |
+| `xl clean` | Delete `.xlang/cache`. |
 
 `install`, `update` and `remove` change `xlang.toml` and `xlang.lock` only when everything resolved; a failure leaves both untouched. Edits keep your comments and layout.
 
-**Builds never use the network.** `build`, `run`, `check`, `test` read the lock and the cache only. A missing package is `E0741` with the fix `run xlang package install`. This keeps builds fast, offline and deterministic.
+**Builds never use the network.** `build`, `run`, `check`, `test` read the lock and the cache only. A missing package is `E0741` with the fix `run xl install`. This keeps builds fast, offline and deterministic.
 
 `git` must be on `PATH`. It is run without a shell, never prompts for a password (`GIT_TERMINAL_PROMPT=0`), and uses your normal git configuration, so private repositories work with an SSH key or a credential helper.
 
@@ -107,7 +107,7 @@ import "github.com/user/repo" as repo
 Order of precedence, first match wins:
 
 1. `--std=<directory>`: that directory (it must contain `index.xl`).
-2. `--std=host/user/repo[@tag]`: that repository, which must have been installed (`xlang package install --std=...`, or listed in `[std]`). Without `@tag` the locked version is used.
+2. `--std=host/user/repo[@tag]`: that repository, which must have been installed (`xl install --std=...`, or listed in `[std]`). Without `@tag` the locked version is used.
 3. `[std]` in `xlang.toml`.
 4. The stdlib embedded in the compiler.
 
@@ -148,7 +148,7 @@ link = ["lib/macos-aarch64/libfoo.a"]
 | `E0745` | import of a repository that is not a dependency |
 | `E0746` | a `[[native]]` file does not exist |
 
-`xlang --explain E0741` prints the long explanation.
+`xl --explain E0741` prints the long explanation.
 
 ## Questions
 
