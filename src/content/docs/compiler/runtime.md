@@ -10,10 +10,10 @@ The compiler owns the language, types, layout, CPU primitives and compile-time f
 
 | Role | Signature | Called by |
 |---|---|---|
-| `panic` | `fn(msg: *ui8)`, no return | every compiler failure path: an explicit `panic`, division by zero, a failed array bound, a format mismatch |
+| `panic` | `fn(msg: *u8)`, no return | every compiler failure path: an explicit `panic`, division by zero, a failed array bound, a format mismatch |
 | `alloc` | `fn(size: usize, align: usize) -> *void` | `new T` |
 | `free` | `fn(p: *void)`, no return | `delete p` |
-| `unwind` | `fn(i32, *usize, *ui8)` | the landing pads of `try` |
+| `unwind` | `fn(i32, *usize, *u8)` | the landing pads of `try` |
 
 A declaration that does not fit its role is `E0503`; `register(start)` is an unknown role, also `E0503`.
 
@@ -45,7 +45,7 @@ try {
 }
 ```
 
-- `e` is a `*ui8` pointing at the panic message. It points into a buffer owned by the `try` (255 bytes plus a NUL), so copy it to keep it past the `catch`.
+- `e` is a `*u8` pointing at the panic message. It points into a buffer owned by the `try` (255 bytes plus a NUL), so copy it to keep it past the `catch`.
 - `catch` without a name is allowed. `panic(e)` inside a `catch` rethrows to the next enclosing `try`.
 - Leaving the body normally, or with `return`, `break` or `continue`, skips the `catch`.
 

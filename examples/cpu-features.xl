@@ -1,7 +1,7 @@
 // Prints the processor's features. On x86-64 the vendor string and the SIMD and AVX flags; on arm64 the crypto and NEON flags.
 from "std" import print, cpuFeatures, CpuFeatures
 
-fn flag(name: *ui8, v: bool) {
+fn flag(name: *u8, v: bool) {
     print(name)
     print("=")
     print(v)

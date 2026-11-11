@@ -6,7 +6,7 @@ The version module is in `std/semver`. It parses and compares versions by preced
 
 | Function | Purpose |
 |---|---|
-| `semverParse(text)` | returns a `Semver` (`major`, `minor`, `patch` as `ui64`, `pre` as a view, and `valid`) |
+| `semverParse(text)` | returns a `Semver` (`major`, `minor`, `patch` as `u64`, `pre` as a view, and `valid`) |
 | `semverCompare(a, b)` | -1, 0 or 1 by precedence; build metadata is ignored |
 
 The rules applied: numeric fields have no leading zeros; pre-release identifiers are non-empty, use `[0-9A-Za-z-]`, and numeric ones have no leading zeros; build metadata may contain leading zeros. A pre-release version is lower than the normal version; numeric identifiers compare by value and rank below alphanumeric ones; a shorter identifier list is lower when the shared identifiers are equal.

@@ -94,7 +94,7 @@ The original plan is implemented except the items below, which are intentionally
   guard.
 - **Static libraries and objects own no entry:** `--emit=static` and `--emit=obj` export weak `_xl_initAll` and `_xl_finiAll` that run only the `@init` and `@fini` functions of that build. A linking executable keeps its own strong `_xl_initAll`, which runs the init functions of the program it was compiled as, so a prebuilt archive's init functions run only when the host calls that archive's `_xl_initAll` itself. Open decision: one init table per archive, or generated per-object init sections.
 - **Shared libraries on Windows (open decision, needs confirmation):** `--emit=shared` builds a DLL with neither hook, so its `@init` functions do not run on load, its `@fini` functions do not run on unload, and its `@entry` never runs by itself; the host must call `_xl_initAll` and `_xl_finiAll`. A `DllMain` hook (DLL_PROCESS_ATTACH runs `_xl_initAll` and then `@entry`; DLL_PROCESS_DETACH runs `_xl_finiAll`) is not implemented, because Windows work is deferred by the project rules. Whether the Windows hook is in scope now is the open decision.
-- **Entry arguments on Windows and in shared libraries:** the `@entry` argument form (`argc: i32`, `argv: **ui8`) is accepted only for executables on Linux and macOS (`E0755` otherwise). The Windows command line (`GetCommandLineW`) is not read yet. Open decisions: parse `lpCmdLine` in the stub or in `std/sys/windows.xl` and record the quoting rules; and whether a stdlib wrapper gives programs a typed view over the raw `argc`/`argv` form.
+- **Entry arguments on Windows and in shared libraries:** the `@entry` argument form (`argc: i32`, `argv: **u8`) is accepted only for executables on Linux and macOS (`E0755` otherwise). The Windows command line (`GetCommandLineW`) is not read yet. Open decisions: parse `lpCmdLine` in the stub or in `std/sys/windows.xl` and record the quoting rules; and whether a stdlib wrapper gives programs a typed view over the raw `argc`/`argv` form.
 - **macOS unload hook does not run:** `_xl_finiAll` sits in `__DATA,__mod_term_func`, which dyld runs when an image is unloaded. A process exit does not unload a dylib, and `dlclose` is not called by the compiler or the stdlib, so `@fini` of a shared library does not run on macOS unless the host unloads it. This path is not verified at runtime.
 - **Linux runtime of the entry stub and the shared hooks is checked only through Docker:** the Linux `_start` stub and the `.init_array`/`.fini_array` hooks are emitted and cross-built here, but they run only in the Docker e2e legs. The shared-library load test (`shared_hook`) runs on macOS only, through `DYLD_INSERT_LIBRARIES`.
 - Tuples: `(A, B, ...)` is a product type, laid out in order like `@repr(c)`, and a function may return one. A tuple is taken apart with `local (a, b) = f()` or read element by element with `.0`, `.1`, .... A tuple is copied by value and needs no drop, so a tuple holding a value that needs drop (a class with a `drop` method) is not supported: the drop glue for a tuple is not generated. Nested destructuring (`local (a, (b, c)) = f()`) and destructuring in a `for` header are not implemented. A tuple element of a temporary tuple is not a place for `&` (see the address-of rule).
@@ -121,7 +121,7 @@ such a chain of `export *` re-exports has been reported as not visible through `
 (`from "std/collections/result" import Result`) and a namespace import (`import "std/collections" as C`,
 `C.Result<i32, i32>`) work. No cause is confirmed yet.
 - `Vec<T>` (`std/collections/vec`): the element accessors `get`, `first` and `last` return `*T` rather than a value, so a droppable element is never copied. `vecClone` panics for an element type that needs drop, because a bitwise copy would drop the element twice. The index panic text (`Vec: index I out of range for length L`) is built by `fmtIndexPanic` in `std/str/fmt`, on the stack and without allocating. `set` drops the old element through a plain `*slot = v` assignment. A drop-counter element type in `test/e2e/collections.xl` checks that `set`, `insert`, `remove`, `swapRemove` and `truncate` drop each element exactly once.
-- `String` (core-language phase 7): the HTTP and TLS modules still use `*ui8` buffers. `fsReadAllString` is in `std/io/fs`.
+- `String` (core-language phase 7): the HTTP and TLS modules still use `*u8` buffers. `fsReadAllString` is in `std/io/fs`.
 - `const` (core-language phase 2): a `const` is not a `define` constant, so it cannot be an array length, a `staticAssert`
   operand or a `define` argument. Its initializer cannot read another variable or `const` (a `GlobalRef` is not a compile-time
   value), and an untyped module-level `const` takes only the default type of a literal (an enum member or an array needs
@@ -148,17 +148,17 @@ such a chain of `export *` re-exports has been reported as not visible through `
   (`cCompatible` returns false, so it is a clear error, not a silent ABI change);
   (c) `buffer[..]`, `buffer[lo..hi]`, `buffer[..hi]` and `buffer[lo..]` build a slice; slicing a
   non-byte array or an existing slice yields `[]T` over its element type, and slicing a mutable
-  owner (a local array, a `[]mut T`) yields `[]mut T`; `str` and `[ui8; N]` keep their old `str` result;
+  owner (a local array, a `[]mut T`) yields `[]mut T`; `str` and `[u8; N]` keep their old `str` result;
   (d) an empty slice is `len == 0` in practice; a slice value produced from `buf[1..1]` reads `ptr` as
   the base plus one element (not `nil`), because the lowering keeps the owner's data pointer; a truly
   nil slice can be written by hand and is legal to index `0` times;
   (e) indexing a slice is bounds-checked under `--safety=checked` (a panic, like an array); a `[]mut T`
   element is a place (`s[i] = v` writes the owner), a `[]T` element is read through the view;
-  (f) `str` stays the read-only byte slice with a UTF-8 contract; the `[]ui8`-to-`str` bridge and the
+  (f) `str` stays the read-only byte slice with a UTF-8 contract; the `[]u8`-to-`str` bridge and the
   reverse are still `std/str` functions (`fromParts`, `view`), not compiler conversions.
   **The iterating `for`:** `for x in s { }` walks a `[T; N]`, a `[]T`, a `[]mut T` or a `str`; `for x, i
   in s { }` adds the index. Rules as implemented: the element is a pointer into the storage (`*T`, so
-  nothing is copied and `x.field = v` writes the owner), and over `str` the element is `*ui8` (a byte;
+  nothing is copied and `x.field = v` writes the owner), and over `str` the element is `*u8` (a byte;
   a rune form is a later decision); the index is a `usize` and comes *second* (Zig/Odin and `enumerate`
   order, not Go's `i, v` value-copy order); the bound is read once, so changing a length in the body
   does not move the end; `break`/`continue` and a label work as in the other loop forms. It is a pure
@@ -172,10 +172,10 @@ such a chain of `export *` re-exports has been reported as not visible through `
   `for i, x in s` (index first) is rejected, the index is always second. Tests: `test/unit/slices.test.xl`,
   `test/unit/for_iter.test.xl` and `test/e2e/for_iter.xl`.
 - `str` (phase 1 of the core-language work): no `==`/`!=` in the compiler (`eq` in std), no implicit or `as`
-  conversion to `*ui8` (only `.ptr`), no way to make a `str` from a pointer except `std/str` (`strFromParts` reinterprets a
-  `@repr(c)` two-word struct). A `str` view does not keep its bytes alive: the caller must. Writing through the `*ui8` of a
-  literal is undefined behavior (its bytes are in read-only data); `[ui8; N]` is the writable form. `std/http` and the TLS
-  modules still pass `*ui8` pointer and length pairs; their equality function is named `cstrEq` to avoid the name `eq` of `std/str`.
+  conversion to `*u8` (only `.ptr`), no way to make a `str` from a pointer except `std/str` (`strFromParts` reinterprets a
+  `@repr(c)` two-word struct). A `str` view does not keep its bytes alive: the caller must. Writing through the `*u8` of a
+  literal is undefined behavior (its bytes are in read-only data); `[u8; N]` is the writable form. `std/http` and the TLS
+  modules still pass `*u8` pointer and length pairs; their equality function is named `cstrEq` to avoid the name `eq` of `std/str`.
 - `W0701`: a function with a return type can reach its end without `return`. The analysis is syntactic: every
   path must end in `return`, an infinite `while true` without `break`, `__builtin_asm(..., options("noreturn"))` or
   a call to the registered `panic`. Other `noreturn` callees are not recognized (a warning, not an error).

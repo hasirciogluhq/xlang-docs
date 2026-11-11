@@ -23,7 +23,7 @@ A program's start-up is declared with three attributes. The compiler reads only 
 - The form is `@entry fn name() -> i32`, or with the process arguments:
 
 ```xlang
-@entry fn main(argc: i32, argv: **ui8) -> i32 {
+@entry fn main(argc: i32, argv: **u8) -> i32 {
     return 0
 }
 ```

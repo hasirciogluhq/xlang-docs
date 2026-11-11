@@ -112,7 +112,7 @@ in the source**. A `defer` that is textually after an early `return` is not regi
 `return`:
 
 ```
-fn f(p: *ui8) -> i32 {
+fn f(p: *u8) -> i32 {
     if p == nil { return -1 }   // nothing deferred yet
     defer release(p)
     ...

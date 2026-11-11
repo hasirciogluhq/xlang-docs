@@ -72,7 +72,7 @@ export fn add(a: i32, b: i32) -> i32 {
 - `shared`: `@entry` is optional and takes no parameters (`E0755`). `_xl_initAll` is registered as the load hook and runs before `@entry` when the library is loaded (ELF `.init_array`, Mach-O `__mod_init_func`). `_xl_finiAll` is the unload hook (ELF `.fini_array`, Mach-O `__mod_term_func`). Windows DLLs get neither hook yet.
 - `static` and `obj`: no entry code, and an `@entry` function is `E0754`. `_xl_initAll` and `_xl_finiAll` are weak exported symbols: the host calls `_xl_initAll` once before it uses the library, and `_xl_finiAll` once after.
 
-- `@entry` marks the program's entry function, at most one per program (`E0753` for a second). Its form is `@entry fn name() -> i32` or `@entry fn name(argc: i32, argv: **ui8) -> i32`; the return type may be omitted (exit status 0). `argc` is the number of arguments, and `argv` holds `argc` C strings followed by a NULL pointer, with the program path first. Any other parameter list, a generic function or a method is `E0752`.
+- `@entry` marks the program's entry function, at most one per program (`E0753` for a second). Its form is `@entry fn name() -> i32` or `@entry fn name(argc: i32, argv: **u8) -> i32`; the return type may be omitted (exit status 0). `argc` is the number of arguments, and `argv` holds `argc` C strings followed by a NULL pointer, with the program path first. Any other parameter list, a generic function or a method is `E0752`.
 - `@init` marks a module-level boot function: `@init fn boot() { ... }` with no parameters, no return type and a body. It runs before `@entry`, in this order: the stdlib group first, then the user group. Within a group the order is a depth-first post-order over the import statements, taken in the order they appear: a module's imports run before the module, and each module runs once. In a cycle, a module reached again while it is still being visited is skipped, so the module that was entered first in the cycle runs last among the modules of that cycle.
 - `@fini` marks a module-level teardown function with the same form and rules as `@init`. It runs after `@entry`, in the reverse of the `@init` order. In a shared library it runs at unload; in a static library or object file the host calls `_xl_finiAll`. Each attribute is optional, and a library may use either one alone.
 - Calling an `@init`, `@fini` or `@entry` function, or using its name as a value, is error `E0727`. `@init` and `@fini` on a class method, on a generic or non-function item, or on a function with parameters or a return type are `E0729`. A bodyless `@init fn boot();` is the parser's error `E0002`.
@@ -87,16 +87,16 @@ export fn add(a: i32, b: i32) -> i32 {
 | Syntax | Description |
 |--------|-------------|
 | `i8`, `i16`, `i32`, `i64` | Signed integers |
-| `ui8`, `ui16`, `ui32`, `ui64` | Unsigned integers |
+| `u8`, `u16`, `u32`, `u64` | Unsigned integers |
 | `isize`, `usize` | Pointer-sized signed / unsigned integers |
 | `f32`, `f64` | Floating point |
 | `bool` | `true` / `false` |
 | `void` | No value (the return type of a function without `->`) |
-| `*T` | Pointer to `T` (`*ui8`, `*Point`, `*void`) |
+| `*T` | Pointer to `T` (`*u8`, `*Point`, `*void`) |
 | `fn(A, B) -> R` | Function pointer |
 | `[T; N]` | Fixed-size array; `N` is a compile-time constant |
 | `(A, B, ...)` | Tuple: the elements in order, laid out like `@repr(c)`; `()` is the empty tuple |
-| `str` | Built-in read-only view `{ ptr: *ui8, len: usize }`; it never owns its bytes |
+| `str` | Built-in read-only view `{ ptr: *u8, len: usize }`; it never owns its bytes |
 | `[]T`, `[]mut T` | A non-owning slice: a fat pointer `{ ptr: *T, len: usize }`, the same two words as `str`. `[]mut T` is the writable view (same layout, `mut` is a permission). See [Slices and the iterating `for`](#slices-and-the-iterating-for) |
 | `Name` | A `struct`, `class`, `interface` or `enum` |
 
@@ -110,15 +110,15 @@ A string literal takes its type from the place it is written in:
 
 | Context | Type | Bytes live in | Mutable |
 |---|---|---|---|
-| expected `*ui8` (or an enum over `*ui8`) | `*ui8` | `.rodata`, NUL-terminated | no; writing through it is undefined behavior |
-| expected `[ui8; N]` | `[ui8; N]` copy, zero-padded | the array | yes |
+| expected `*u8` (or an enum over `*u8`) | `*u8` | `.rodata`, NUL-terminated | no; writing through it is undefined behavior |
+| expected `[u8; N]` | `[u8; N]` copy, zero-padded | the array | yes |
 | anything else, including no expected type | `str` | `.rodata`, with a trailing NUL that is not in `len` | no |
 
-`local buf: [ui8; 8] = "Jones"` copies the bytes into the array; a literal longer than `N` is error `E0717`. A `str` literal's `len` is the number of decoded bytes, so `"Jo\0nes".len` is 6. The `str` fields are `ptr` (type `*ui8`) and `len` (type `usize`); both are read-only. `s[i]` reads one byte and, under `--safety=checked`, panics when `i >= len`. Assigning through a `str` (`s[i] = x`, `s.len = n`) is error `E0716`. `==` and `!=` are not defined on `str`; use `eq` from the standard library (`import eq from "std/str"`). A `str` converts to `*ui8` only through `.ptr`; `as` cannot convert it either.
+`local buf: [u8; 8] = "Jones"` copies the bytes into the array; a literal longer than `N` is error `E0717`. A `str` literal's `len` is the number of decoded bytes, so `"Jo\0nes".len` is 6. The `str` fields are `ptr` (type `*u8`) and `len` (type `usize`); both are read-only. `s[i]` reads one byte and, under `--safety=checked`, panics when `i >= len`. Assigning through a `str` (`s[i] = x`, `s.len = n`) is error `E0716`. `==` and `!=` are not defined on `str`; use `eq` from the standard library (`import eq from "std/str"`). A `str` converts to `*u8` only through `.ptr`; `as` cannot convert it either.
 
-A byte literal `b'x'` is a single `ui8` constant, so it needs no `as` in a byte context: `if c == b')' { }`. Printable characters, the escapes `\n \t \r \0 \\ \' \"` and `\xHH` all work, and a byte above 127 is written only as `b'\xHH'`. Exactly one byte goes between the quotes; `b'ab'` is an error. `b` followed by anything other than a quote is still an ordinary identifier.
+A byte literal `b'x'` is a single `u8` constant, so it needs no `as` in a byte context: `if c == b')' { }`. Printable characters, the escapes `\n \t \r \0 \\ \' \"` and `\xHH` all work, and a byte above 127 is written only as `b'\xHH'`. Exactly one byte goes between the quotes; `b'ab'` is an error. `b` followed by anything other than a quote is still an ordinary identifier.
 
-A slice is a view of bytes, never a copy: `s[a..b]` yields the `str` that starts at byte `a` and has length `b - a`. Both bounds are optional (`s[a..]` runs to the end, `s[..b]` starts at 0, `s[..]` is the whole thing), and both are `usize`-compatible integer expressions. The base is a `str` or a `[ui8; N]`; an array's storage is borrowed, so a write through the array is visible through the view, and the array must outlive the view just as a `str`'s bytes must. Under `--safety=checked` both bounds are checked at run time and a start past the end or an end past the length panics; on a constant-length array a constant end past the length is error `E0701`. Slicing anything else (a `*ui8`, an `[i32; N]`) is `E0709`, and a slice is a value, so assigning to it (`s[0..1] = "x"`) is `E0716` like any other `str` write.
+A slice is a view of bytes, never a copy: `s[a..b]` yields the `str` that starts at byte `a` and has length `b - a`. Both bounds are optional (`s[a..]` runs to the end, `s[..b]` starts at 0, `s[..]` is the whole thing), and both are `usize`-compatible integer expressions. The base is a `str` or a `[u8; N]`; an array's storage is borrowed, so a write through the array is visible through the view, and the array must outlive the view just as a `str`'s bytes must. Under `--safety=checked` both bounds are checked at run time and a start past the end or an end past the length panics; on a constant-length array a constant end past the length is error `E0701`. Slicing anything else (a `*u8`, an `[i32; N]`) is `E0709`, and a slice is a value, so assigning to it (`s[0..1] = "x"`) is `E0716` like any other `str` write.
 
 The `std/str` module provides `eq`, `fromC` (view of a NUL-terminated C string), `fromParts` (view of `n` bytes at a pointer) and `view` (checked sub-range, no copy). Functions that return text return an owned `String` instead: `slice`, `trim`, `trimStart`, `trimEnd`, `split` (returns `Vec<String>`), `replace`, `replaceAll`, `repeat`. A `str` view does not keep its bytes alive; the owner of the bytes must outlive it.
 
@@ -130,7 +130,7 @@ Locals are declared with `local`; the type is written after a colon:
 
 ```
 local i: i32 = 0
-local buf: [ui8; 64]          // no initializer
+local buf: [u8; 64]          // no initializer
 local q: *Point = &p
 local n = 3                   // type inferred from the initializer
 local m := 3                  // same, written with `:=`
@@ -143,7 +143,7 @@ Globals use `global` with a mandatory type. Their initializer must be a compile-
 ```
 global counter: i64 = 10
 global table: [i32; 4]
-global banner: *ui8 = "xlang"
+global banner: *u8 = "xlang"
 ```
 
 A `const` is a named compile-time constant that cannot be written. It is allowed at module level (with `export`) and as a statement in any block. The type is optional; without it, the type is the default type of the literal value (integers `i32`, or `i64` when the value does not fit; floats `f64`; `bool`; strings `str`). A module-level `const` without a type must have a literal value. The initializer must be a compile-time constant: literals, arithmetic and casts on them, `define` constants, arrays and struct literals of such values, and `&global`. Reading another variable or `const` in an initializer is error `E0715`.
@@ -151,7 +151,7 @@ A `const` is a named compile-time constant that cannot be written. It is allowed
 ```
 const LIMIT: i32 = 7
 const GREETING = "hi"              // str
-const TABLE: [ui8; 4] = "abc"       // copied bytes, zero-padded
+const TABLE: [u8; 4] = "abc"       // copied bytes, zero-padded
 ```
 
 Every `const` is emitted as read-only data. Assigning to a `const`, or to an element or field of one, is error `E0716`. `&LIMIT` is allowed and yields an ordinary pointer; writing through it is undefined behavior. A block-level `const` is visible only in its block; it cannot be deferred.
@@ -164,10 +164,10 @@ Assignment is `target = value` and `target op= value` for `+ - * / % & | ^ << >>
 
 - `&x` takes an address, `*p` dereferences, `p.field` reaches a field through a pointer or a value, `p[i]` indexes a pointer or an array.
 - `nil` is the null pointer.
-- Conversions are explicit with `as`: `x as i64`, `p as *ui8`, `(addr as usize)`, `n as *void`.
+- Conversions are explicit with `as`: `x as i64`, `p as *u8`, `(addr as usize)`, `n as *void`.
 - Implicit conversions: same-signedness integer widening only. A signed integer converting to a float warns (`W0601`). Unsigned to signed (and the reverse) is an error (`E0601`). Narrowing always needs `as`.
 - An `unsafe { ... }` block allows implicit integer conversions that change signedness when the target is the same width or wider, and unsigned to float (still `W0601`); narrowing always needs `as`.
-- Arithmetic on fixed-width integers wraps (`u + 10` with `u: ui8 = 250` gives 4). Division by zero and out-of-range array indexes call the registered `panic` under `--safety=checked`.
+- Arithmetic on fixed-width integers wraps (`u + 10` with `u: u8 = 250` gives 4). Division by zero and out-of-range array indexes call the registered `panic` under `--safety=checked`.
 
 ---
 
@@ -186,10 +186,10 @@ v[0] = 100                          // writes buf[1]
 
 for x in all { ... }                // x: *i32, points into buf
 for x, i in all { ... }             // i: usize, the index
-for b in "abcd" { ... }             // str walks bytes, b: *ui8
+for b in "abcd" { ... }             // str walks bytes, b: *u8
 ```
 
-- The brackets hold a range: `[..]`, `[lo..hi]`, `[lo..]`, `[..hi]` (upper bound excluded). Slicing a non-byte array or an existing slice yields a slice of its element type. A slice is writable (`[]mut T`) only when the owner is a writable place and not `const`; otherwise it is `[]T`. Slicing `str` or `[ui8; N]` yields a `str`.
+- The brackets hold a range: `[..]`, `[lo..hi]`, `[lo..]`, `[..hi]` (upper bound excluded). Slicing a non-byte array or an existing slice yields a slice of its element type. A slice is writable (`[]mut T`) only when the owner is a writable place and not `const`; otherwise it is `[]T`. Slicing `str` or `[u8; N]` yields a `str`.
 - `.len` is the number of elements and `.ptr` the data pointer (`*T`). Indexing is bounds-checked under `--safety=checked`. Writing an element (`s[i] = v`) needs a `[]mut T`: on a read-only `[]T` it is `E0716` ("cannot write through a read-only slice"). A `[]mut T` element is a place; a `[]T` element reads through the view.
 - `[]mut T` marks a writable view only. It is what a read-only `[]T` must be upcast to in order to write; the reverse (`[]mut T` to `[]T`) is implicit and free. There is no borrow checker, so `mut` is not an aliasing or lifetime guarantee: two views of the same bytes may exist.
 - A `for x in s` element is a pointer into the storage, so nothing is copied and `x.field = v` writes the owner. The bound is read once, before the first turn. `break`, `continue` and a label behave as in the other `for` forms. The form is a compiler lowering to an index loop, not a method call.
@@ -200,13 +200,13 @@ for b in "abcd" { ... }             // str walks bytes, b: *ui8
 ## Functions
 
 ```
-fn name(a: i32, b: *ui8) -> i64 { ... }
-fn log(msg: *ui8) { ... }            // no `->` means void
+fn name(a: i32, b: *u8) -> i64 { ... }
+fn log(msg: *u8) { ... }            // no `->` means void
 fn apply(f: fn(i32) -> i32, v: i32) -> i32 { return f(v) }
 ```
 
 - Overloading: functions may share a name when their parameter types differ. Defining the same parameter types twice is `E0401`. `register`ed functions, `export(c)` and `declare` functions cannot be overloaded (`E0405`). An `@entry` function can be overloaded: the entry is the one marked, not the name. Non-virtual methods of one class may overload each other; `virtual`/`override` methods cannot (`E0405`).
-- A call picks the overload with the lowest total argument cost: an exact type costs 0; an untyped integer literal costs 1 for `i64` and 2 for any other integer type; an untyped float literal costs 1 for `f64` and 2 for `f32`; a string literal costs 0 for `str`, 1 for `*ui8` and 2 for `[ui8; N]`; `nil` costs 1 for a pointer; integer widening costs 1; wrapping a value in an interface costs 1; an integer to float conversion costs 2; other conversions cost 3. An argument that does not convert makes the overload unavailable. A tie is `E0403`; no available overload is `E0404` and lists the signatures. Each non-literal argument of an overloaded call is lowered once, before the candidates are compared, with no expected type; only the chosen overload's arguments are converted to its parameter types.
+- A call picks the overload with the lowest total argument cost: an exact type costs 0; an untyped integer literal costs 1 for `i64` and 2 for any other integer type; an untyped float literal costs 1 for `f64` and 2 for `f32`; a string literal costs 0 for `str`, 1 for `*u8` and 2 for `[u8; N]`; `nil` costs 1 for a pointer; integer widening costs 1; wrapping a value in an interface costs 1; an integer to float conversion costs 2; other conversions cost 3. An argument that does not convert makes the overload unavailable. A tie is `E0403`; no available overload is `E0404` and lists the signatures. Each non-literal argument of an overloaded call is lowered once, before the candidates are compared, with no expected type; only the chosen overload's arguments are converted to its parameter types.
 - A function name used as a value is chosen by the expected `fn(...)` type. Without one, an overloaded name is `E0403`.
 - Overloaded functions are named with their parameter types in the link name, even under `--mangle=none`.
 - A function alias gives another name to a function: `fn out = io.print` (module level, may be `export`ed). It stands for the whole overload set of its target, calls resolve exactly as calls to the target, and taking it as a value follows the rule above. Aliases may chain; a cycle is `E0704`. Importers see the alias as the target's function.
@@ -252,7 +252,7 @@ defer cleanup(p)
 
 - Conditions need no parentheses; bodies always use braces.
 - `for` has three forms. `for init; cond; step { }` is the C-style loop; any of the three parts may be left out (`for ; cond; step`, `for init; ; step`, `for init; cond; { }`), and leaving out the condition makes an infinite loop. `for name in lo..hi { }` counts from `lo` up to but not including `hi`, and `for name in lo..=hi { }` includes `hi`. A range loop evaluates both bounds once, before the first iteration, so changing them in the body does not move the end. The loop variable's type is the bounds' integer type; an untyped integer literal on one side takes the type of the other, so `for i in 0..limit()` works without a written `as`. A reversed range (`5..2`) is empty and runs zero times. `for name in pack { }` unrolls a parameter pack; see the variadic rule under Functions. Every form takes an optional label (`outer: for ...`), and `break outer` / `continue outer` leave or advance that loop.
-- The iterating `for` (`for x in s`, `for x, i in s`) walks a `[T; N]`, a `[]T`, a `[]mut T` or a `str`. The element is a pointer into the storage (`*T`, so nothing is copied and `x.field = v` writes the owner); over `str` the element is `*ui8`. The index is a `usize` and comes second (`for x, i in s`), never first. It lowers to a plain index loop (no vtable, no `Iter` protocol), reads the bound once, and takes a label, `break` and `continue` like the other loops. A `Vec<T>` is not iterable directly yet (see [Known limitations](/known-limitations/)).
+- The iterating `for` (`for x in s`, `for x, i in s`) walks a `[T; N]`, a `[]T`, a `[]mut T` or a `str`. The element is a pointer into the storage (`*T`, so nothing is copied and `x.field = v` writes the owner); over `str` the element is `*u8`. The index is a `usize` and comes second (`for x, i in s`), never first. It lowers to a plain index loop (no vtable, no `Iter` protocol), reads the bound once, and takes a label, `break` and `continue` like the other loops. A `Vec<T>` is not iterable directly yet (see [Known limitations](/known-limitations/)).
 - `switch` works on integers, bools and enums, has no fallthrough, and a `break` inside it leaves the enclosing loop.
 - `defer stmt` runs when the enclosing block is left; see [defer.md](/language/defer/).
 - `cond ? a : b` is the conditional expression.
@@ -262,7 +262,7 @@ defer cleanup(p)
 ```
 try {
     work()
-} catch e {            // `e: *ui8`, the panic message; `catch { }` without a name is allowed
+} catch e {            // `e: *u8`, the panic message; `catch { }` without a name is allowed
     handle(e)
 }
 ```
@@ -328,7 +328,7 @@ fn eval(e: Expr) -> i64 {
 - A `class` has fields, methods, single inheritance (`class Dog : Animal`) and a vptr; `virtual` methods are overridden with `override`. A `*Dog` converts to `*Animal` with `as`.
 - An `interface` is a set of method signatures. A value of interface type is a fat pointer (data pointer plus table); `impl Interface for Type` provides the methods, and a value of that type passes where the interface is expected. Interfaces are nominal: without the `impl` the use is error `E0504`. An interface value borrows its object and owns nothing, so returning one whose object is a local, a parameter, a temporary or a part of one is error `E0760` (a dangling fat pointer); it is an error, never a warning, and `--allow`/`@allow` cannot silence it. Allocate the object with `new` and return that pointer, which converts to the interface: `local p := new CProvider()` then `return p`. The caller owns the heap object and frees it with `delete`. The check covers `return` (directly, or inside a ternary, tuple or struct literal); it does not follow an interface stored in a variable or a field first.
 - Enum members are accessed as `Color.Green` and converted to integers with `as`.
-- A value enum (`enum Name: T { A, B = 5 }`) names constants. `T` is an integer, float, bool or `*ui8`; a member without `= value` is the previous integer plus one (the first is 0), and a non-integer enum needs a value on every member (`E0705`).
+- A value enum (`enum Name: T { A, B = 5 }`) names constants. `T` is an integer, float, bool or `*u8`; a member without `= value` is the previous integer plus one (the first is 0), and a non-integer enum needs a value on every member (`E0705`).
 - A payload enum has at least one member written `Name(T1, T2, ...)`. It has no `: T` and no `= value` members (`E0747`), and its tag is the position of the variant. A variant is built like a call, `Expr.Add(a, b)`, with exactly its number of values, each converted to the payload type at its position; a variant without data is a plain value, `Expr.Nil` (`E0751` for a wrong count, `E0706` for an unknown member). The payload types may be any type, including pointers to the enum itself and a class that needs drop: the enum's drop glue drops the payload of the live variant when the enum is dropped, and binding a payload in a `case` moves it out. A droppable payload makes the enum itself need drop, so the same places that refuse a droppable class refuse it: a global or a struct field of such an enum is `E0758`, and an array of one is `E0759`.
 - A payload enum may be generic: `enum Result<T, E> { Ok(T) Err(E) }`, and its payload types may name the enum's own type parameters. Each use with concrete type arguments creates one instance of the whole enum, so `Result<i32, MyErr>` and `Result<String, MyErr>` are different types with their own tag, union and payload structs. A variant is constructed as `E.Variant(...)`, and for a generic enum the target type must be known where the value is created: `Result.Ok(1)` takes its type arguments from the type the surrounding expression expects (`local r: Result<i32, MyErr> = Result.Ok(1)`); without that type the enum is `E0756`. A variant without data is written `Result.None` and takes its type from the expected type in the same way.
 - A payload enum is a value: it is copied like a struct. Its size is the tag plus the largest payload, not the sum of the payloads. It is a struct `{ tag, data }` whose `data` is a union of one struct per variant, so `sizeOf(Expr)` and `alignOf(Expr)` work.
@@ -348,7 +348,7 @@ The compiler does not know allocators. It knows two registered functions: `new T
 
 The stdlib registers `alloc` and `free` functions when the `default-allocator` feature is on (the default). They forward to `currentAllocator`, a plain exported global of `std/mem` whose type is the `Allocator` interface (`alloc(self, size: usize, align: usize) -> *void` / `free(self, p: *void)`, ordinary stdlib code, not a builtin). A program changes where memory comes from either by assigning `currentAllocator` (for example in an `@init` function) or by registering its own `alloc` and `free`. `free(p)` from `std/mem/mem` frees through `currentAllocator`. `malloc`/`free`/`memcpy` are not builtins: they are stdlib code (`std/mem/mem`, `std/mem/memory`).
 
-`register(role) decl` makes a declaration global and exported under a role. The roles are `panic` (`fn(msg: *ui8)` with no return type; the compiler's failure paths call it), `alloc` (`fn(size: usize, align: usize) -> *void`) and `free` (`fn(p: *void)` with no return type). A declaration that does not fit its role is `E0503`. `register(start)` is an unknown-role error (`E0503`).
+`register(role) decl` makes a declaration global and exported under a role. The roles are `panic` (`fn(msg: *u8)` with no return type; the compiler's failure paths call it), `alloc` (`fn(size: usize, align: usize) -> *void`) and `free` (`fn(p: *void)` with no return type). A declaration that does not fit its role is `E0503`. `register(start)` is an unknown-role error (`E0503`).
 
 Registrations of the same role override by group: the stdlib (the default) is replaced by a user registration of the same role, a user registration is never replaced by the stdlib, and two registrations of one role in the same group are `E0502`. A user `alloc` must be paired with a user `free`, because the stdlib `free` forwards to `currentAllocator`; the compiler does not check the pairing.
 
@@ -454,7 +454,7 @@ All of it is in `std/`; `import "std"` or `from "std" import name` brings it in,
 
 | Area | Contents |
 |--------|----------|
-| `std/io` | `print`, `println`, `fprint(fd, ...)`, `fprintln(fd, ...)`, `eprint`, `eprintln`. Each takes `str`, `*ui8`, `i64`, `ui64`, `f64`, `bool` or `*String`, or a format string followed by any number of arguments (`..args`). `print` adds no newline and `println` adds one `\n`. Output is written straight to the fd and makes no allocator calls. `f64` prints with six decimals |
+| `std/io` | `print`, `println`, `fprint(fd, ...)`, `fprintln(fd, ...)`, `eprint`, `eprintln`. Each takes `str`, `*u8`, `i64`, `u64`, `f64`, `bool` or `*String`, or a format string followed by any number of arguments (`..args`). `print` adds no newline and `println` adds one `\n`. Output is written straight to the fd and makes no allocator calls. `f64` prints with six decimals |
 | `std/io/fs`, `std/io/dir`, `std/io/stat` | whole-file helpers, directory listing (`fsListDir`) and file status |
 | `std/str/fmt` | {% raw %}The placeholder engine: `{}` takes the next argument, `{{` and `}}` print braces, and a count mismatch panics with `format: N placeholders, got M arguments in "TEXT"`. `sprintf`, `format` (both return a `String`), `fmtAppend(*String, ...)`, `snprintf(buf, cap, fmt, ...) -> usize`, and `toString` for the scalar types. `fmtEmit(sink, fmt, ..args)` is the shared engine{% endraw %} |
 | `std/str/str` | the `str` view helpers: `eq`, `fromC`, `fromParts`, `view` (no copy), `find`, `contains`, `startsWith`, `endsWith`, `toU64`, `toI64` (decimal only; false on overflow or junk) |

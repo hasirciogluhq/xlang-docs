@@ -21,7 +21,7 @@ The mathematics modules are in `std/math`. There is no C runtime: every function
 
 ### `BigInt` (`big.xl`)
 
-`BigInt` is an owning, unsigned arbitrary-precision integer: a class with a `Vec<ui32>` of little-endian 32-bit limbs and a method for every operation. A method writes its result into a destination, so no operation allocates a return value and the result of `a + b` can go into `c`, into `a` or into `b`:
+`BigInt` is an owning, unsigned arbitrary-precision integer: a class with a `Vec<u32>` of little-endian 32-bit limbs and a method for every operation. A method writes its result into a destination, so no operation allocates a return value and the result of `a + b` can go into `c`, into `a` or into `b`:
 
 ```xlang
 from "std/math" import BigInt
@@ -33,13 +33,13 @@ a.add(&b, &sum)                       // sum = a + b, a and b unchanged
 print(sum.toDecimal().asStr())        // 18446744073709551616
 ```
 
-`BigInt()` is 0 and `BigInt(v)` is a `ui64` (the low limb is `v & 0xFFFFFFFF`, the high limb `v >> 32`). The representation is canonical: no zero limbs above the most significant one, so `cmp` is a length comparison followed by one limb comparison, and equal numbers have equal limb vectors.
+`BigInt()` is 0 and `BigInt(v)` is a `u64` (the low limb is `v & 0xFFFFFFFF`, the high limb `v >> 32`). The representation is canonical: no zero limbs above the most significant one, so `cmp` is a length comparison followed by one limb comparison, and equal numbers have equal limb vectors.
 
 | Group         | Methods                                                                                                                                               |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Shape         | `count()` limbs, `bitLength()` bits, `isZero`, `isEven`, `isOdd`, `isOne`, `low64()` (the value modulo 2^64)                                          |
 | Comparison    | `cmp(&o)` gives -1, 0 or 1; `equals(&o)`                                                                                                              |
-| Arithmetic    | `add(&o, &out)`, `sub(&o, &out)`, `mul(&o, &out)`, `divMod(&o, &q, &r)` (false for a zero divisor), `mod(&o, &out)`, `pow(e: ui64, &out)`             |
+| Arithmetic    | `add(&o, &out)`, `sub(&o, &out)`, `mul(&o, &out)`, `divMod(&o, &q, &r)` (false for a zero divisor), `mod(&o, &out)`, `pow(e: u64, &out)`             |
 | Number theory | `gcd(&o, &out)`, `lcm(&o, &out)`, `modPow(&e, &m, &out)` (false for an even or zero modulus), `modInverse(&m, &out)` (false when `gcd(self, m) != 1`) |
 | Bits          | `shiftLeft(n: usize, &out)`, `shiftRight(n: usize, &out)` (rounds down)                                                                               |
 | Text          | `fromDecimal(s, &out)`, `fromHex(s, &out)` (optional `0x`; both false on bad text), `toDecimal()`, `toHex()`, `toString()` (all return `String`)      |
@@ -51,7 +51,7 @@ The bound is `BIG_MAX = 130` limbs, that is 4160 bits: it is the size of the fix
 
 ### Limb array functions (`bigint.xl`, `bigdiv.xl`, `bignum.xl`)
 
-Below `BigInt` are the same algorithms on raw limb arrays, for the fixed-size operands of the crypto modules (`std/crypto/sig/ecdsa`, RSA). Limbs are little-endian `ui32`. `bigintAdd`, `bigintSub`, `bigintMul`, `bigintDivMod` (Knuth Algorithm D), `bigintPow`, `bigintGcd`, `bigintLcm`, `bigintModPow` (Montgomery, odd modulus), `bigintModInverse`, and `bigintIsProbablePrime` (Miller-Rabin with random bases, FIPS 186-5 B.3.1). These take `*ui32` and an explicit limb count and write into caller arrays; `BigInt` never changes them.
+Below `BigInt` are the same algorithms on raw limb arrays, for the fixed-size operands of the crypto modules (`std/crypto/sig/ecdsa`, RSA). Limbs are little-endian `u32`. `bigintAdd`, `bigintSub`, `bigintMul`, `bigintDivMod` (Knuth Algorithm D), `bigintPow`, `bigintGcd`, `bigintLcm`, `bigintModPow` (Montgomery, odd modulus), `bigintModInverse`, and `bigintIsProbablePrime` (Miller-Rabin with random bases, FIPS 186-5 B.3.1). These take `*u32` and an explicit limb count and write into caller arrays; `BigInt` never changes them.
 
 ## Floating point (`float.xl`, `trig.xl`, `math.xl`)
 

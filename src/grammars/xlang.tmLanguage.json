@@ -269,7 +269,7 @@
       "patterns": [
         {
           "name": "storage.type.primitive.xlang",
-          "match": "\\b(i8|i16|i32|i64|isize|ui8|ui16|ui32|ui64|usize|f32|f64|bool|void)\\b"
+          "match": "\\b(i8|i16|i32|i64|isize|u8|u16|u32|u64|usize|f32|f64|bool|void)\\b"
         },
         {
           "name": "entity.name.type.xlang",
