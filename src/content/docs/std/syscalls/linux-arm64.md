@@ -54,6 +54,8 @@ arm64 has no `epoll_wait` entry; `epoll_pwait` (22) is the call to use, with a n
 
 Process spawning (`std/sys/spawn`), read from `include/uapi/asm-generic/unistd.h`: execve 221, chdir 49, geteuid 175, ppoll 73, pipe2 59, dup3 24, fcntl 25, wait4 260, kill 129, clone 220, exit 93, getpid 172, rt_sigaction 134, and readlinkat 78 (arm64 has no plain `readlink`; `AT_FDCWD` is -100, `include/uapi/linux/fcntl.h`). The constants of the x86-64 page (`O_CLOEXEC`, `F_DUPFD_CLOEXEC`, `POLLIN`, ...) are the same on arm64.
 
+Directories (`std/io/dir`), read from `include/uapi/asm-generic/unistd.h`: getcwd 17, mkdirat 34, unlinkat 35 (with `AT_REMOVEDIR` 0x200, `include/uapi/linux/fcntl.h`, it removes a directory), renameat 38 (arm64 has no plain `mkdir`, `rmdir` or `rename`), and ioctl 29 for `TCGETS` (0x5401, `include/uapi/asm-generic/ioctls.h`) behind `isatty`.
+
 Also confirmed: ioctl 29, sendmsg 211, recvmsg 212, madvise 233, sched_yield 124, rt_sigaction 134, rt_sigprocmask 135, getpid 172, fcntl 25, dup3 24, eventfd2 19, signalfd4 74, timerfd_create 85, prlimit64 261.
 
 ## Not yet verified

@@ -81,6 +81,12 @@ generic table, recorded in `linux-arm64.md`.
 | execve | 59 | processes (`std/sys/spawn`) |
 | chdir | 80 | processes |
 | readlink | 89 | processes (`/proc/self/exe`) |
+| getcwd | 79 | `std/io/dir` (`getcwd(buf, size)`: the length including the NUL, or -errno) |
+| rename | 82 | `std/io/dir` |
+| mkdir | 83 | `std/io/dir` (`mkdir(path, mode)`, mode 0755) |
+| rmdir | 84 | `std/io/dir` |
+
+`isatty` is `ioctl(fd, TCGETS, &termios)` (`TCGETS` = 0x5401, `include/uapi/asm-generic/ioctls.h`): 0 means a terminal. A `struct termios` is at most 60 bytes (`struct termios2` in the same header family is 44); 64 bytes of buffer are used.
 | geteuid | 107 | elevation check |
 | ppoll | 271 | pipe readiness |
 
