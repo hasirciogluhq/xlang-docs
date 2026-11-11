@@ -1,0 +1,5 @@
+# Jekyll build output and cache (the Pages workflow builds in CI; local builds write here)
+_site/
+.jekyll-cache/
+.sass-cache/
+.DS_Store
