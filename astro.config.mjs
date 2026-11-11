@@ -65,6 +65,8 @@ export default defineConfig({
             page('std/math', 'Mathematics'),
             page('std/auth', 'Authentication tokens'),
             page('std/compress', 'Compression'),
+            page('std/archive', 'Archives (tar)'),
+            page('std/files', 'Files and arguments'),
             page('std/encoding', 'Encodings'),
             page('std/cpu', 'CPU features'),
             page('std/system', 'System information'),

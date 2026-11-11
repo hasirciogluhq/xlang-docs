@@ -11,7 +11,9 @@ The standard library is written in xlang and is embedded in the compiler. A prog
 - `std/random`: OS entropy, a ChaCha20 generator, Xoshiro and SplitMix generators, UUIDs of every version and other identifiers. See [Random and identifiers](/std/random/).
 - `std/sys`: the operating system layer. See [System calls](/std/syscalls/).
 - `std/encoding`: hexadecimal, Base64, Base32, Base58, Base85, PEM, DER, UTF-8, CSV, JSON, TOML, CBOR, MessagePack, Protocol Buffers wire primitives, and Punycode. See [Encodings](/std/encoding/).
-- `std/compress`: DEFLATE, gzip and zlib, both decoding (all block types) and encoding (fixed Huffman and stored). See [Compression](/std/compress/).
+- `std/compress`: DEFLATE, gzip and zlib, decoding and encoding (dynamic Huffman, levels 0 to 9). See [Compression](/std/compress/).
+- `std/archive`: tar reading, writing, extraction and creation. See [Archives](/std/archive/).
+- `std/os/args`, `std/io/files`: command-line arguments on every OS, and file and directory helpers. See [Files and arguments](/std/files/).
 - `std/auth`: HS256 JWS tokens and AWS SigV4 signing. See [Authentication tokens](/std/auth/).
 - `std/time`: calendar arithmetic and RFC 3339 timestamps. See [Date and time](/std/time/).
 - `std/semver`: Semantic Versioning 2.0.0 parsing and precedence. See [Versions](/std/semver/).
