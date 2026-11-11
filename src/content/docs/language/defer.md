@@ -1,4 +1,6 @@
-# `defer`
+---
+title: "`defer`"
+---
 
 `defer stmt` registers a statement to run when the **enclosing block is left**, not where it is
 written. It keeps cleanup next to the code that needs it and runs on every way out of the block.
@@ -159,7 +161,7 @@ Consequences:
 
 ## Notes
 
-- A `panic` caught by an enclosing [`try`]({{ site.baseurl }}/language/index.html#try--catch) runs the registered `defer`
+- A `panic` caught by an enclosing [`try`](/language/#try--catch) runs the registered `defer`
   statements (and drops) of every frame between the panic and the `try`, innermost first. A
   `defer` is run on this path only if its statement was already reached. A panic with no
   enclosing `try` ends the process and runs nothing.

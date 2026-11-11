@@ -1,4 +1,6 @@
-# Cryptography
+---
+title: Cryptography
+---
 
 The cryptography modules are in `std/crypto`. Every algorithm names its specification in the file header and is checked against published test vectors. Functions take raw pointers and lengths and write into caller buffers; the sizes follow from the digest, tag or key length.
 
@@ -107,7 +109,7 @@ Each algorithm is checked against published vectors: the specification's example
 
 ## Not implemented
 
-The AES-CFB and AES-OFB modes, OCB, the DES, RC4 and other legacy ciphers, XTS ciphertext stealing, Argon2 and bcrypt, and the other items in the deferred list are in [Known limitations](../known-limitations.html).
+The AES-CFB and AES-OFB modes, OCB, the DES, RC4 and other legacy ciphers, XTS ciphertext stealing, Argon2 and bcrypt, and the other items in the deferred list are in [Known limitations](/known-limitations/).
 
 ## Certificate requests and revocation lists (`std/crypto/x509`)
 

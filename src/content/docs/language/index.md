@@ -1,4 +1,6 @@
-# xlang Language Reference
+---
+title: xlang Language Reference
+---
 
 This document describes the syntax, types, module system and compiler-provided features of xlang as implemented today. Source files use the extension `.xl`. The standard library lives in `std/` and is written in xlang itself; the compiler gives no special treatment to names inside it.
 
@@ -250,9 +252,9 @@ defer cleanup(p)
 
 - Conditions need no parentheses; bodies always use braces.
 - `for` has three forms. `for init; cond; step { }` is the C-style loop; any of the three parts may be left out (`for ; cond; step`, `for init; ; step`, `for init; cond; { }`), and leaving out the condition makes an infinite loop. `for name in lo..hi { }` counts from `lo` up to but not including `hi`, and `for name in lo..=hi { }` includes `hi`. A range loop evaluates both bounds once, before the first iteration, so changing them in the body does not move the end. The loop variable's type is the bounds' integer type; an untyped integer literal on one side takes the type of the other, so `for i in 0..limit()` works without a written `as`. A reversed range (`5..2`) is empty and runs zero times. `for name in pack { }` unrolls a parameter pack; see the variadic rule under Functions. Every form takes an optional label (`outer: for ...`), and `break outer` / `continue outer` leave or advance that loop.
-- The iterating `for` (`for x in s`, `for x, i in s`) walks a `[T; N]`, a `[]T`, a `[]mut T` or a `str`. The element is a pointer into the storage (`*T`, so nothing is copied and `x.field = v` writes the owner); over `str` the element is `*ui8`. The index is a `usize` and comes second (`for x, i in s`), never first. It lowers to a plain index loop (no vtable, no `Iter` protocol), reads the bound once, and takes a label, `break` and `continue` like the other loops. A `Vec<T>` is not iterable directly yet (see [Known limitations]({{ site.baseurl }}/known-limitations.html)).
+- The iterating `for` (`for x in s`, `for x, i in s`) walks a `[T; N]`, a `[]T`, a `[]mut T` or a `str`. The element is a pointer into the storage (`*T`, so nothing is copied and `x.field = v` writes the owner); over `str` the element is `*ui8`. The index is a `usize` and comes second (`for x, i in s`), never first. It lowers to a plain index loop (no vtable, no `Iter` protocol), reads the bound once, and takes a label, `break` and `continue` like the other loops. A `Vec<T>` is not iterable directly yet (see [Known limitations](/known-limitations/)).
 - `switch` works on integers, bools and enums, has no fallthrough, and a `break` inside it leaves the enclosing loop.
-- `defer stmt` runs when the enclosing block is left; see [defer.md]({{ site.baseurl }}/language/defer.html).
+- `defer stmt` runs when the enclosing block is left; see [defer.md](/language/defer/).
 - `cond ? a : b` is the conditional expression.
 
 ### try / catch
@@ -269,7 +271,7 @@ try {
 - Leaving the body normally, or with `return`, `break` or `continue`, skips the `catch`. A panic inside the `catch` goes to the next enclosing `try`; `panic(e)` rethrows.
 - `e` points into a buffer owned by the `try` (255 bytes plus NUL); copy it to keep it past the `catch`.
 - A panic with no enclosing `try` is fatal and runs nothing. There are no typed errors.
-- The compiler gives functions that own cleanups a landing pad and keeps their locals in memory (they are not inlined); the walker is stdlib (`std/runtime/unwind`) behind the `unwind` role. Without the role `try` is `E0501`. See [Known limitations]({{ site.baseurl }}/known-limitations.html) for the limits (foreign frames, Windows).
+- The compiler gives functions that own cleanups a landing pad and keeps their locals in memory (they are not inlined); the walker is stdlib (`std/runtime/unwind`) behind the `unwind` role. Without the role `try` is `E0501`. See [Known limitations](/known-limitations/) for the limits (foreign frames, Windows).
 
 ---
 
@@ -356,7 +358,7 @@ Registrations of the same role override by group: the stdlib (the default) is re
 
 ## Modules and import
 
-A module path `"x"` resolves to `x.xl` or `x/index.xl`. `std` and `std/x` come from the stdlib root; a path that starts with a dependency's repository path (`"github.com/user/repo"`, `"github.com/user/repo/sub"`) comes from that installed package (see [Packages]({{ site.baseurl }}/compiler/packages.html)); other paths are searched from the importing file's directory, then the root file's directory.
+A module path `"x"` resolves to `x.xl` or `x/index.xl`. `std` and `std/x` come from the stdlib root; a path that starts with a dependency's repository path (`"github.com/user/repo"`, `"github.com/user/repo/sub"`) comes from that installed package (see [Packages](/compiler/packages/)); other paths are searched from the importing file's directory, then the root file's directory.
 
 ```
 import "std"                                // module as a namespace
@@ -400,7 +402,7 @@ declare fn helper(x: i32) -> i32          // resolved at link time from another 
 - Other attributes: `@repr(c)` (C layout), `@allow(CODE)` (silence a warning for the item).
 - `--emit=header` writes a C header for exported items; `--emit=static|shared|obj` produce a static archive, shared library or object.
 
-See [Linking]({{ site.baseurl }}/compiler/linking.html) for how objects are linked.
+See [Linking](/compiler/linking/) for how objects are linked.
 
 ---
 
@@ -448,7 +450,7 @@ The global namespace holds only a closed list of builtins plus `register`ed name
 
 ## Standard library
 
-All of it is in `std/`; `import "std"` or `from "std" import name` brings it in, and `from "std/<module>" import name` imports one module. Each area has an `index.xl` that re-exports its parts, so `from "std/str" import trim` and `from "std/str/string" import trim` both work. The pages under [Standard library]({{ site.baseurl }}/std/) give the API of each area; this table is the map.
+All of it is in `std/`; `import "std"` or `from "std" import name` brings it in, and `from "std/<module>" import name` imports one module. Each area has an `index.xl` that re-exports its parts, so `from "std/str" import trim` and `from "std/str/string" import trim` both work. The pages under [Standard library](/std/) give the API of each area; this table is the map.
 
 | Area | Contents |
 |--------|----------|
@@ -501,7 +503,7 @@ fn addWorks(t: *T) { expectEq(t, 1 + 2, 3) }
 }
 ```
 
-Matchers are typed functions (`expect`, `expectTrue`, `expectEq`, `expectEqUInt`, `expectEqStr`, `expectNear`, `expectGt`, `expectNil`, ...). There is no discovery and no chained matcher syntax. The repository's own end-to-end programs live in `test/e2e/`, and the language unit suites in `test/unit/`; see [Testing]({{ site.baseurl }}/compiler/testing.html).
+Matchers are typed functions (`expect`, `expectTrue`, `expectEq`, `expectEqUInt`, `expectEqStr`, `expectNear`, `expectGt`, `expectNil`, ...). There is no discovery and no chained matcher syntax. The repository's own end-to-end programs live in `test/e2e/`, and the language unit suites in `test/unit/`; see [Testing](/compiler/testing/).
 
 ---
 
@@ -520,7 +522,7 @@ xlang self-update [--check]
 xlang --explain E0501
 ```
 
-Common flags: `-D`/`-U`, `--target <triple>`, `-O 0..3`, `-g`, `--cpu`, `--mangle xl|none`, `--safety checked|unchecked`, `--no-std`, `--std <dir|host|user|repo[@tag]>`, `--std-features`, `--layout-scheme`, `--layout-history`, `--incremental`, `--cache-dir`, `--print-cfg`, `--context N`, `--allow`/`--deny`/`--warn-all`/`--allow-all`, `--diag-format text|json`. Global: `--version`, `--color auto|always|never` (see [Installing the compiler]({{ site.baseurl }}/compiler/install.html)). `xlang self-update` installs the latest release.
+Common flags: `-D`/`-U`, `--target <triple>`, `-O 0..3`, `-g`, `--cpu`, `--mangle xl|none`, `--safety checked|unchecked`, `--no-std`, `--std <dir|host|user|repo[@tag]>`, `--std-features`, `--layout-scheme`, `--layout-history`, `--incremental`, `--cache-dir`, `--print-cfg`, `--context N`, `--allow`/`--deny`/`--warn-all`/`--allow-all`, `--diag-format text|json`. Global: `--version`, `--color auto|always|never` (see [Installing the compiler](/compiler/install/)). `xlang self-update` installs the latest release.
 
 Diagnostics have codes: `E` for errors, `W` for warnings (for example `E0501`, `W0402`); `--explain CODE` prints the long explanation, and warnings are controlled with `--allow`, `--deny` and `@allow`.
 
@@ -528,4 +530,4 @@ Diagnostics have codes: `E` for errors, `W` for warnings (for example `E0501`, `
 
 ## Limitations
 
-Open decisions and intentional incompleteness are recorded in [Known limitations]({{ site.baseurl }}/known-limitations.html) (nested tuple destructuring, no generic constraints, TLS 1.3 only, and so on).
+Open decisions and intentional incompleteness are recorded in [Known limitations](/known-limitations/) (nested tuple destructuring, no generic constraints, TLS 1.3 only, and so on).

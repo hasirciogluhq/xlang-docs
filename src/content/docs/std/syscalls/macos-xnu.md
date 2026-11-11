@@ -1,4 +1,6 @@
-# macOS (XNU) BSD system call numbers
+---
+title: macOS (XNU) BSD system call numbers
+---
 
 Source: `bsd/kern/syscalls.master` from the apple-oss-distributions/xnu main branch, read at
 https://raw.githubusercontent.com/apple-oss-distributions/xnu/main/bsd/kern/syscalls.master.

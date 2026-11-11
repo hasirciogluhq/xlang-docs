@@ -51,7 +51,7 @@ try {
 
 The compiler only emits landing pads, `try` snapshots and the pad table. The walker is stdlib code in `std/runtime/unwind`, registered with the `unwind` role.
 
-Unwinding walks frame pointers. A frame of foreign code (a C library callback, for example) therefore cannot be unwound, and every stack entry point must zero the frame pointer. See [Known limitations]({{ site.baseurl }}/known-limitations.html) for the remaining gaps.
+Unwinding walks frame pointers. A frame of foreign code (a C library callback, for example) therefore cannot be unwound, and every stack entry point must zero the frame pointer. See [Known limitations](/known-limitations/) for the remaining gaps.
 
 ## Memory
 

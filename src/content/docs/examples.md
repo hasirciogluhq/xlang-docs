@@ -4,7 +4,7 @@ title: Examples
 
 The examples come in two sets with one source each:
 
-- **Short programs for the documentation** live in `docs/examples/` as `.xl` files. The pages of this site include them,
+- **Short programs for the documentation** live in `examples/` of this repository as `.xl` files. The pages of this site include them,
   so the code shown is the code in the repository.
 - **Complete programs** live in `examples/<name>/` (`main.xl` plus a README). They build as ordinary programs with
   `xlang build -o <name> examples/<name>/main.xl`.
@@ -20,16 +20,14 @@ Each example below is one of the routing examples of the Gin documentation, writ
 
 ### Hello world
 
-```xlang
-{% include_relative examples/hello.xl %}
+```xlang file=examples/hello.xl
 ```
 
 ### Path parameters
 
 `:name` matches one segment; `*action` matches the rest of the path, including its leading slash.
 
-```xlang
-{% include_relative examples/params.xl %}
+```xlang file=examples/params.xl
 ```
 
 ### Query string
@@ -37,8 +35,7 @@ Each example below is one of the routing examples of the Gin documentation, writ
 `Query(name)` returns the value of a query parameter, and `DefaultQuery(name, fallback)` returns the fallback when the
 parameter is absent.
 
-```xlang
-{% include_relative examples/query.xl %}
+```xlang file=examples/query.xl
 ```
 
 ### Groups and middleware
@@ -46,20 +43,17 @@ parameter is absent.
 `Group(prefix)` returns a `*RouterGroup` that copies the middleware in effect at that point; `Use` adds middleware to the
 routes registered after it, and `Next` runs the rest of the chain.
 
-```xlang
-{% include_relative examples/groups.xl %}
+```xlang file=examples/groups.xl
 ```
 
 ### Redirects
 
-```xlang
-{% include_relative examples/redirects.xl %}
+```xlang file=examples/redirects.xl
 ```
 
 ### JSON
 
-```xlang
-{% include_relative examples/json.xl %}
+```xlang file=examples/json.xl
 ```
 
 ## Complete programs

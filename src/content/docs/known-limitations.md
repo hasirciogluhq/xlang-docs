@@ -1,4 +1,6 @@
-# Known limitations and open decisions
+---
+title: Known limitations and open decisions
+---
 
 The original plan is implemented except the items below, which are intentionally incomplete or blocked.
 
@@ -184,7 +186,7 @@ such a chain of `export *` re-exports has been reported as not visible through `
 - `HIR` does not fold constant expressions (`N * 2` is constant in global initializers but folded later).
 - Module resolution: `std`/`std/x` come from the stdlib root; other paths from the importing file's
   directory, then the root file's directory; a path under a dependency's repository path comes from that
-  installed package (see [Packages]({{ site.baseurl }}/compiler/packages.html)). `import "x"` without alias binds the last path segment.
+  installed package (see [Packages](/compiler/packages/)). `import "x"` without alias binds the last path segment.
   There are no other search-path strategies.
 - The default stdlib is embedded in the compiler (generated `build/gen/std_blob.cpp`, rebuilt when
   `std/**/*.xl` changes); `--std=<dir>`, `--std=host/user/repo[@tag]` and `[std]` in `xlang.toml` replace it.
@@ -192,7 +194,7 @@ such a chain of `export *` re-exports has been reported as not visible through `
 
 ## Packages (`xlang package`, `xlang.toml`, `xlang.lock`)
 
-Decisions taken when the package system was added ([Packages]({{ site.baseurl }}/compiler/packages.html) is the reference):
+Decisions taken when the package system was added ([Packages](/compiler/packages/) is the reference):
 
 - **Git is the registry.** Packages are tags of git repositories, fetched by running the `git` executable
   (`ls-remote`, `clone --depth 1`); no HTTP client, no hosting API, no search, no publish command. Builds

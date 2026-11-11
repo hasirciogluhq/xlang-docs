@@ -81,7 +81,7 @@ fn auth(c: *Context) {
 | Chunked | `StreamStart()`, `WriteChunk(bytes)`, `EndStream()` |
 | Chain | `Next()`, `Abort()`, `AbortWithStatus(code)`, `IsAborted()`, `Responded()` |
 
-The examples on the [Examples]({{ site.baseurl }}/examples.html) page are the routing examples of the Gin documentation, written with `std/http`, and are included straight from `docs/examples/`.
+The examples on the [Examples](/examples/) page are the routing examples of the Gin documentation, written with `std/http`, and are included straight from `docs/examples/`.
 
 ## Client
 
@@ -108,4 +108,4 @@ from "std" import Client, Request, Response, println
 
 `clientErrorText(code)` turns a failure code into a message; `fetchErrorText(code)` does the same for the `FETCH_ERR_*` codes.
 
-Limits are listed in [Known limitations]({{ site.baseurl }}/known-limitations.html).
+Limits are listed in [Known limitations](/known-limitations/).

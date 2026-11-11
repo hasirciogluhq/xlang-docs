@@ -1,5 +1,5 @@
-# Jekyll build output and cache (the Pages workflow builds in CI; local builds write here)
-_site/
-.jekyll-cache/
-.sass-cache/
+# Build output, Astro cache and installed packages (the Pages workflow builds in CI)
+dist/
+.astro/
+node_modules/
 .DS_Store

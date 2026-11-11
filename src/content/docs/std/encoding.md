@@ -1,4 +1,6 @@
-# Encodings
+---
+title: Encodings
+---
 
 The encoding modules are in `std/encoding`. Each encoder writes into a caller buffer and returns the length; each decoder returns the byte count, or `-1` for input that is not valid.
 

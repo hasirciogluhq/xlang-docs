@@ -1,4 +1,6 @@
-# Date and time
+---
+title: Date and time
+---
 
 The date module is in `std/time/date`. It works on the proleptic Gregorian calendar and on UTC; it has no time zone rules of
 its own, a zone is a TZif file parsed by `std/time/tzif` (second section).

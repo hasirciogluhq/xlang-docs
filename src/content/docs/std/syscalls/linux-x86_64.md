@@ -1,4 +1,6 @@
-# Linux x86-64 system call numbers
+---
+title: Linux x86-64 system call numbers
+---
 
 Source: the kernel table `arch/x86/entry/syscalls/syscall_64.tbl` from the Linux master branch,
 read at https://raw.githubusercontent.com/torvalds/linux/master/arch/x86/entry/syscalls/syscall_64.tbl.

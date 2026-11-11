@@ -1,10 +1,12 @@
-# Builds the documentation site from the repository root with GitHub's own Jekyll builder and deploys it to GitHub Pages.
+# Builds the documentation site (Astro + Starlight, `bun run build`) and deploys it to GitHub Pages.
+# The build also validates every internal link (starlight-links-validator) and creates the Pagefind search index.
 # Repository setting required once: Settings > Pages > Build and deployment > Source: "GitHub Actions".
 name: pages
 
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -22,19 +24,25 @@ jobs:
     steps:
       - name: Check out
         uses: actions/checkout@v4
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Build the site
-        uses: actions/jekyll-build-pages@v1
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+      # Starlight starts the Pagefind indexer with `npx`, so Node must be on the PATH.
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          source: ./
-          destination: ./_site
+          node-version: 22
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+      - name: Build the site
+        run: bun run build
       - name: Upload the site
+        if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: dist
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     environment:

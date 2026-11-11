@@ -2,7 +2,7 @@
 title: Cloud storage (S3)
 ---
 
-`std/cloud` is an S3 client for any S3-compatible service. It signs requests with AWS Signature Version 4 (<https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-signing.html>) and sends them through the standard HTTP client (`std/http`, see [HTTP](http.html)), so HTTPS works through the same TLS code.
+`std/cloud` is an S3 client for any S3-compatible service. It signs requests with AWS Signature Version 4 (<https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_aws-signing.html>) and sends them through the standard HTTP client (`std/http`, see [HTTP](/std/http/)), so HTTPS works through the same TLS code.
 
 ## Profiles
 
@@ -72,6 +72,6 @@ The S3 test runs natively only, because the server is on the host's loopback add
 
 ## Limits
 
-- The client holds whole bodies in memory; streaming upload and download are not implemented yet (see [known limitations](../known-limitations.html)).
+- The client holds whole bodies in memory; streaming upload and download are not implemented yet (see [known limitations](/known-limitations/)).
 - Only the operations above are implemented. Bucket deletion, versioning, lifecycle, ACL and policy calls are not.
 - The addressing style comes from the profile; the client does not probe the server.

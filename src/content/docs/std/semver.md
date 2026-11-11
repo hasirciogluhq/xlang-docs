@@ -1,4 +1,6 @@
-# Versions (SemVer)
+---
+title: Versions (SemVer)
+---
 
 The version module is in `std/semver`. It parses and compares versions by precedence as defined by Semantic Versioning 2.0.0 (https://semver.org/spec/v2.0.0.html).
 

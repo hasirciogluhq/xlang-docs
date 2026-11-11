@@ -1,4 +1,6 @@
-# xlang Packages
+---
+title: xlang Packages
+---
 
 A package is a git repository of plain `.xl` source. `xlang package install github.com/user/repo` downloads its newest release into the project, and `import "github.com/user/repo"` uses it. That is the whole system.
 
@@ -163,6 +165,6 @@ link = ["lib/macos-aarch64/libfoo.a"]
 
 | Document | Role |
 |----------|------|
-| [Language Reference]({{ site.baseurl }}/language/index.html) | import syntax and module resolution |
-| [Linking]({{ site.baseurl }}/compiler/linking.html) | how objects and prebuilt files are linked |
-| [Install]({{ site.baseurl }}/compiler/install.html) | installing the compiler itself |
+| [Language Reference](/language/) | import syntax and module resolution |
+| [Linking](/compiler/linking/) | how objects and prebuilt files are linked |
+| [Install](/compiler/install/) | installing the compiler itself |

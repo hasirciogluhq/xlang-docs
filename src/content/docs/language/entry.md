@@ -65,4 +65,4 @@ What start-up code is emitted depends on `--emit`:
 
 The entry symbols (`_start`, `mainCRTStartup`) and `_xl_initAll` are compiler-owned: a user `export(c)`, `@mangle` or `declare` that uses one of these names is `E0726`.
 
-Entry stubs exist for Linux and macOS on x86-64 and arm64, and for Windows on x86-64. See [Known limitations]({{ site.baseurl }}/known-limitations.html) for the targets that are not covered.
+Entry stubs exist for Linux and macOS on x86-64 and arm64, and for Windows on x86-64. See [Known limitations](/known-limitations/) for the targets that are not covered.

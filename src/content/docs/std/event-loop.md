@@ -1,4 +1,6 @@
-# Readiness polling
+---
+title: Readiness polling
+---
 
 The standard library exposes one readiness API in `std/sys`: `sysPollCreate`, `sysPollWatch`, `sysPollWait`.
 A poll set is created once; a watch asks for one readiness event on a socket (read or write) and is one-shot,

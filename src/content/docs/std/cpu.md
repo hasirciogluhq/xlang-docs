@@ -1,10 +1,11 @@
-# CPU features
+---
+title: CPU features
+---
 
 `std/cpu` reports which instruction-set extensions the processor has and the operating system enables. The call is
 `cpuFeatures()`, which returns a `CpuFeatures` struct of flags. Nothing is cached: each call asks the processor again.
 
-```xlang
-{% include cpu-features.xl %}
+```xlang file=examples/cpu-features.xl
 ```
 
 ## Where the flags come from

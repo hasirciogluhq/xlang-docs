@@ -1,4 +1,6 @@
-# Mathematics
+---
+title: Mathematics
+---
 
 The mathematics modules are in `std/math`. There is no C runtime: every function is written in xlang, and each file header states its method and range. Accuracy is checked against `bc -l` (arbitrary precision) on sample points; where a claim is weaker than full double precision, the header says so.
 

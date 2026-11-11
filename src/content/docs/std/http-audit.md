@@ -1,4 +1,6 @@
-# HTTP audit against RFC 9110 and RFC 9112
+---
+title: HTTP audit against RFC 9110 and RFC 9112
+---
 
 This page records how `std/http` was checked against the HTTP/1.1 rules that a server must follow. Each row names the rule,
 the code that implements it, and whether it passes now. The check was a reading of the code and raw requests sent with `nc`

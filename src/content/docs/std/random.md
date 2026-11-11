@@ -1,4 +1,6 @@
-# std/random
+---
+title: std/random
+---
 
 `std/random` gives random bytes, a cryptographically secure generator, non-cryptographic generators, UUIDs and
 other identifiers. Random bytes always come from the operating system (`randomBytes`, `sysRandom`), so no

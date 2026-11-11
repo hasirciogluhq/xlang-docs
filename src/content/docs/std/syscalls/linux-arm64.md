@@ -1,4 +1,6 @@
-# Linux arm64 system call numbers
+---
+title: Linux arm64 system call numbers
+---
 
 Source: the generic table `include/uapi/asm-generic/unistd.h` from the Linux master branch, which arm64
 uses unchanged, read at https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/asm-generic/unistd.h.

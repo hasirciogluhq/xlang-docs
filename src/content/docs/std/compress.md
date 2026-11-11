@@ -1,4 +1,6 @@
-# Compression
+---
+title: Compression
+---
 
 The compression modules are in `std/compress`: decoders in `inflate.xl` and encoders in `deflate.xl`.
 

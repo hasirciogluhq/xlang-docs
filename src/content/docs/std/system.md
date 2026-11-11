@@ -1,4 +1,6 @@
-# System information
+---
+title: System information
+---
 
 Four small modules read facts the operating system already publishes. None of them opens a device for writing.
 
@@ -10,8 +12,7 @@ Four small modules read facts the operating system already publishes. None of th
 | `std/io/dir` | `fsListDir` | `getdents64` on Linux (x86-64 217, arm64 61); `opendir`/`readdir`/`closedir` on macOS; `FindFirstFileW`/`FindNextFileW`/`FindClose` on Windows |
 | `std/sys` | `envGet(name, out, cap)` | `/proc/self/environ` on Linux; `getenv` from libSystem on macOS; `GetEnvironmentVariableW` (through `sysGetEnvW`) on Windows |
 
-```xlang
-{% include system-info.xl %}
+```xlang file=examples/system-info.xl
 ```
 
 ## What was checked
@@ -28,7 +29,7 @@ Four small modules read facts the operating system already publishes. None of th
 ## Not implemented
 
 Windows returns empty or false where the OS publishes nothing: `hwProductName` has no registry-free source (see
-[Known limitations]({{ site.baseurl }}/known-limitations.html)), and `gpuDrmDevices` needs DXGI, which is not wrapped.
+[Known limitations](/known-limitations/)), and `gpuDrmDevices` needs DXGI, which is not wrapped.
 The rest of the Windows columns are filled: `cpuFeatures` (CPUID/XGETBV on x86-64, `IsProcessorFeaturePresent` on arm64),
 `hwCpuModel` (`PROCESSOR_IDENTIFIER`), `hwMemoryBytes` (`GlobalMemoryStatusEx`), `fsListDir` and the guarded mapping below.
 macOS has no GPU enumeration (Metal and IOKit are deferred). The CPU flags do not cover every extension (SSE4A, AVX-VNNI,

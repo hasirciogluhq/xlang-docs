@@ -2,7 +2,7 @@
 title: Classes
 ---
 
-A `class` holds fields and methods, may derive from one base class, and carries a vptr. Everything here is also covered in the [language reference]({{ site.baseurl }}/language/); this page collects the rules that belong to classes alone.
+A `class` holds fields and methods, may derive from one base class, and carries a vptr. Everything here is also covered in the [language reference](/language/); this page collects the rules that belong to classes alone.
 
 ## Declaration
 
@@ -33,7 +33,7 @@ class Dog : Animal {
 
 - A `class` has single inheritance (`class Dog : Animal`) and a vptr; `virtual` methods are replaced with `override`.
 - Field names follow `camelCase`, type names `PascalCase`.
-- A struct holds data only and has no methods; a class owns both. See [interface and enum]({{ site.baseurl }}/language/#structs-classes-interfaces-and-enums) in the reference.
+- A struct holds data only and has no methods; a class owns both. See [interface and enum](/language/#structs-classes-interfaces-and-enums) in the reference.
 
 ## Constructors and destructors
 
@@ -64,7 +64,7 @@ The compiler knows no allocator type and no allocator method names, only the reg
 - `new(p) T(args)` constructs in the memory `p` points at and allocates nothing (`E0709` when `p` is not a pointer).
 - `delete p` runs the drop of the pointee when it needs drop, then releases the memory through the registered `free`.
 - There is no explicit-allocator form of `delete`. To release memory from another allocator, call `__builtin_drop` and that allocator's `free` yourself.
-- Without a registered `alloc`, `new T` is `E0501`; without a registered `free`, `delete p` is `E0501`. The stdlib registers both by default; see [Runtime]({{ site.baseurl }}/compiler/runtime.html).
+- Without a registered `alloc`, `new T` is `E0501`; without a registered `free`, `delete p` is `E0501`. The stdlib registers both by default; see [Runtime](/compiler/runtime/).
 
 ## Generics
 

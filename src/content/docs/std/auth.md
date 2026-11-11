@@ -1,4 +1,6 @@
-# Authentication tokens
+---
+title: Authentication tokens
+---
 
 `std/auth` builds and checks signed JSON tokens.
 

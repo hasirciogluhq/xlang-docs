@@ -1,6 +1,8 @@
-# Installing the compiler
+---
+title: Installing the compiler
+---
 
-This page covers the prebuilt `xlang` compiler: the install script, `xlang self-update`, and what is supported. Installing packages with `xlang package install` is a different topic: see [Packages]({{ site.baseurl }}/compiler/packages.html).
+This page covers the prebuilt `xlang` compiler: the install script, `xlang self-update`, and what is supported. Installing packages with `xlang package install` is a different topic: see [Packages](/compiler/packages/).
 
 ## Supported platforms
 
@@ -37,12 +39,12 @@ Homebrew: `brew install hasirciogluhq/tap/xlang`. The release workflow updates t
 
 ## Windows
 
-The compiler itself runs on macOS and Linux only. On Windows, install WSL and run the install script inside it. The compiler can still build Windows executables there (`--target x86_64-pc-windows-msvc`); see [Linking]({{ site.baseurl }}/compiler/linking.html).
+The compiler itself runs on macOS and Linux only. On Windows, install WSL and run the install script inside it. The compiler can still build Windows executables there (`--target x86_64-pc-windows-msvc`); see [Linking](/compiler/linking/).
 
 Target support from another host, as of the current development tree:
 
 - `x86_64-pc-windows-msvc` builds end to end; `std/sys`, `std/net`, `std/tls` and `std/io` have Windows branches (`ntdll`/`kernel32`/`ws2_32`/`bcrypt`), and the entry stub is x86-64 assembly.
-- `aarch64-pc-windows-msvc` does **not** build: the compiler emits an x86-64 entry stub for every Windows target, so even an empty `@entry` function fails under the aarch64 assembler. Recorded in [known limitations](../known-limitations.html).
+- `aarch64-pc-windows-msvc` does **not** build: the compiler emits an x86-64 entry stub for every Windows target, so even an empty `@entry` function fails under the aarch64 assembler. Recorded in [known limitations](/known-limitations/).
 - Building the compiler itself for Windows from source is not supported yet: several host-side source files still call POSIX process and path functions. Nothing in this repository has been compiled with MSVC.
 
 ## Updating: `xlang self-update`

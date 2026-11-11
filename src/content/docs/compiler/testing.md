@@ -1,4 +1,6 @@
-# Testing
+---
+title: Testing
+---
 
 The repository has three test suites.
 

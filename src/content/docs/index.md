@@ -14,12 +14,12 @@ Source files use the `.xl` extension. This site is the only documentation source
 
 ## Where things live
 
-- Language reference: [Language](language/)
-- Build and install: [Install](compiler/install.html)
-- Running the test suites: [Testing](compiler/testing.html)
-- Examples: [Examples](examples.html)
-- Standard library overview: [Standard library](std/)
-- Open decisions and deferred work: [Known limitations](known-limitations.html)
+- Language reference: [Language](/language/)
+- Build and install: [Install](/compiler/install/)
+- Running the test suites: [Testing](/compiler/testing/)
+- Examples: [Examples](/examples/)
+- Standard library overview: [Standard library](/std/)
+- Open decisions and deferred work: [Known limitations](/known-limitations/)
 
 ## Source
 
