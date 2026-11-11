@@ -36,6 +36,14 @@ The original plan is implemented except the items below, which are intentionally
   disposition) runs inside `sockUp`, which every socket creator calls; user code never sees it. Not done: the
   public `std/net` layer on top of `std/sys/sock.xl` (IPv6, DNS, address types).
 
+- **Interface escape check is `return`-only (`E0760`):** an interface whose object is on the stack is rejected when it
+  is returned. Storing one in a global, a field or an out-parameter, or returning an interface that was first put in a
+  variable, is not tracked. Open decision: a real escape analysis, or an owning interface form.
+- **Owning interface (open):** `return p` of a `new` object gives the caller an `IProvider` that borrows heap memory
+  nobody owns, so freeing it is manual (`delete` needs the concrete pointer, which the fat pointer no longer names).
+  An unsafe-style heap hand-over (an owning interface or a `delete` through an interface) is a new language feature and
+  is not designed yet.
+
 ## ABI and interop
 
 - **`export(c)` and aggregates by value:** structs are passed/returned through pointers (the xl convention),
