@@ -116,8 +116,8 @@ The original plan is implemented except the items below, which are intentionally
   The tag is always `i32`.
 - **Std sum types (`std/collections/option`, `std/collections/result`):** `Option<T>` and `Result<T, E>` are ordinary
 generic payload enums plus a few helpers (`optionOrElse`, `optionIsSome`, `optionTake`, `resultOrElse`, `resultIsOk`,
-`resultTake`, `resultTakeErr`). There is no `?` operator in the language, so early exit is written out as a `switch` on
-both variants; the page in each file shows the shape. Known gap: `Option`/`Result` are re-exported through
+`resultTake`, `resultTakeErr`). Early exit is `e?` (see the language reference); `?` has no error conversion, so the
+failure type must be the same in the callee and the caller. Known gap: `Option`/`Result` are re-exported through
 `std/collections/index.xl` and `std/index.xl` with `export *`, and a generic type that reaches a program only through
 such a chain of `export *` re-exports has been reported as not visible through `import "std"` while a direct import
 (`from "std/collections/result" import Result`) and a namespace import (`import "std/collections" as C`,
@@ -173,7 +173,7 @@ such a chain of `export *` re-exports has been reported as not visible through `
   checker), so `mut` marks intent, it does not forbid a second view of the same bytes;
   `for i, x in s` (index first) is rejected, the index is always second. Tests: `test/unit/slices.test.xl`,
   `test/unit/for_iter.test.xl` and `test/e2e/for_iter.xl`.
-- `str` (phase 1 of the core-language work): no `==`/`!=` in the compiler (`eq` in std), no implicit or `as`
+- `str` (phase 1 of the core-language work): `==`/`!=` compare the bytes of two `str` (no ordering; `String` has `eq` in std), no implicit or `as`
   conversion to `*u8` (only `.ptr`), no way to make a `str` from a pointer except `std/str` (`strFromParts` reinterprets a
   `@repr(c)` two-word struct). A `str` view does not keep its bytes alive: the caller must. Writing through the `*u8` of a
   literal is undefined behavior (its bytes are in read-only data); `[u8; N]` is the writable form. `std/http` and the TLS
@@ -278,7 +278,7 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
 - **`std/testing/testing` has no discovery:** a test file registers its tests explicitly (`test(&s, "name", fn)`) and
   returns `suiteRun`. Auto-discovery of `fn test*` would need reflection or a compiler-side convention.
 - **No chained matchers** (`expect(x).toEqual(y)`): the matchers are typed functions (`expectEq` for `i64`, `expectEqUInt`, `expectEqStr`, `expectNear`, ...).
-- **`try` / `catch` unwinds panics only.** There are no typed errors (`Result`, `?`); that is a separate decision.
+- **`try` / `catch` unwinds panics only.** Typed errors are `Result` and `Option` with `?`, which are ordinary values and unrelated to unwinding.
   The unwinder (`std/runtime/unwind`) walks frame pointers and uses a table of (function, landing pad) addresses, so:
   frames of foreign code (not compiled by xlang) cannot be unwound; the table covers the functions of the module being
   compiled, so separately compiled modules (`only_module`) are not unwound through; a function with `defer`, drops or
