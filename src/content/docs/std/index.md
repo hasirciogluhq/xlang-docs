@@ -23,7 +23,7 @@ The standard library is written in xlang and is embedded in the compiler. A prog
 - `std/io`: `print`, `println`, `fprint` and the other output functions, whole-file helpers, directory listing and file status.
 - `std/mem`: `memcpy`, `memmove`, `memset` and `memcmp`, the `Allocator` interface, the default heap and `currentAllocator`.
 - `std/thread`: threads, `Mutex`, `Cond`, `RwLock`, `Once`, and the cooperative scheduler.
-- `std/os`: process control (exit, the process id, environment access through `std/sys`).
+- `std/os`: child processes (spawn, pipes, signals, elevation check) and the environment. See [Processes](/std/process/).
 - `std/cpu`, `std/gpu`, `std/hw`: CPU feature flags, GPU device discovery, and hardware facts the OS publishes. See [CPU features](/std/cpu/) and [System information](/std/system/).
 - `std/cloud`: an S3 client. See [Cloud storage](/std/cloud/).
 - `std/runtime`: panic, unwinding and stack switching. See [Runtime](/compiler/runtime/).

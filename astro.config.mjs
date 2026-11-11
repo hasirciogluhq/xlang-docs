@@ -68,6 +68,7 @@ export default defineConfig({
             page('std/encoding', 'Encodings'),
             page('std/cpu', 'CPU features'),
             page('std/system', 'System information'),
+            page('std/process', 'Processes'),
             page('std/time', 'Date and time'),
             page('std/semver', 'Versions (SemVer)'),
             page('std/protocols', 'Network protocol messages'),

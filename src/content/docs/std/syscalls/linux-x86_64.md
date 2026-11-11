@@ -78,6 +78,13 @@ generic table, recorded in `linux-arm64.md`.
 | pidfd_open | 434 | processes |
 | io_uring_setup | 425 | event loop |
 | io_uring_enter | 426 | event loop |
+| execve | 59 | processes (`std/sys/spawn`) |
+| chdir | 80 | processes |
+| readlink | 89 | processes (`/proc/self/exe`) |
+| geteuid | 107 | elevation check |
+| ppoll | 271 | pipe readiness |
+
+Process spawning (`std/sys/spawn`) also uses `O_CLOEXEC` = `1 << 19` (0x80000, `include/uapi/asm-generic/fcntl.h`), `F_SETFD` 2, `FD_CLOEXEC` 1, `F_DUPFD_CLOEXEC` = `F_LINUX_SPECIFIC_BASE (1024) + 6` = 1030 (`include/uapi/linux/fcntl.h`), `WNOHANG` 1, and for `ppoll` the `struct pollfd { int fd; short events; short revents; }` with `POLLIN` 0x1, `POLLERR` 0x8, `POLLHUP` 0x10 (`include/uapi/asm-generic/poll.h`). Source of the numbers above and of the signal-handler layout: the same `syscall_64.tbl`; `rt_sigaction` takes the kernel `struct sigaction` (handler, flags, restorer, mask: four 8-byte words) and a signal-set size of 8.
 | io_uring_register | 427 | event loop |
 | madvise | 28 | memory |
 | ioctl | 16 | devices |
