@@ -23,3 +23,11 @@ bun run build    # static site in dist/, fails on a broken internal link
 ```
 
 Pagefind (search) needs `npx` on the PATH, so Node must be installed for the full build.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [SECURITY.md](SECURITY.md) and the [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## License
+
+Licensed under the [Apache License, Version 2.0](LICENSE).
