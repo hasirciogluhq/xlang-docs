@@ -281,7 +281,7 @@ try {
 - Comparison: `== != < <= > >=`. Logical: `&& || !` (short-circuit).
 - Struct literal: `Point { x: 1, y: 2 }`. Array literal: `[1, 2, 3]`.
 - Calls: `f(a, b)`, method calls `obj.method(a)`, macro calls `name!(...)`.
-- `sizeOf(T)`, `alignOf(T)` and `offsetOf(T, field)` are compile-time constants.
+- `sizeOf(T)`, `alignOf(T)` and `offsetOf(T, field)` are compile-time constants. `T` is any type, slices included (`sizeOf([]i32)`, `alignOf([]mut u8)`); a type is valid only as their argument, never as a value. `offsetOf` takes a struct or class.
 
 ---
 
