@@ -7,10 +7,9 @@ The examples come in two sets with one source each:
 - **Short programs for the documentation** live in `examples/` of this repository as `.xl` files. The pages of this site include them,
   so the code shown is the code in the repository.
 - **Complete programs** live in `examples/<name>/` (`main.xl` plus a README). They build as ordinary programs with
-  `xl build -o <name> examples/<name>/main.xl`.
+  `xl build examples/<name>/main.xl -o <name>`.
 
-Every `xmake build` copies both sets into `build/examples/` (`docs/` and `project/`) and type-checks each program with the
-compiler that was just built (`xl check`), so an example that stops compiling fails the build.
+Check an example with `xl check examples/<name>.xl`; the site build does not compile them.
 
 ## Routing (Gin style)
 
