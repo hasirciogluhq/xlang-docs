@@ -164,13 +164,11 @@ such a chain of `export *` re-exports has been reported as not visible through `
   nothing is copied and `x.field = v` writes the owner), and over `str` the element is `*u8` (a byte;
   a rune form is a later decision); the index is a `usize` and comes *second* (Zig/Odin and `enumerate`
   order, not Go's `i, v` value-copy order); the bound is read once, so changing a length in the body
-  does not move the end; `break`/`continue` and a label work as in the other loop forms. It is a pure
-  compiler lowering to the hand-written index loop, no vtable and no `Iter` protocol.
-  **Open edges:** a user-defined type is not iterable (an `Iter` protocol must choose between an
-  `interface` call per element and a monomorphized generic, and there are no constraints, so it is
-  deferred); `for x in vec` over a `Vec<T>` is **not** supported yet, because the compiler must not name
-  a runtime type — `Vec` will be iterable once it can hand out a slice (`vec[..]`), which needs a stdlib
-  `asSlice`; a `[]mut T` is a writable view with no alias or lifetime guarantee (there is no borrow
+  does not move the end; `break`/`continue` and a label work as in the other loop forms. Arrays, slices
+  and `str` lower to the hand-written index loop. A struct or class is iterable through its methods:
+  `fn next(self: *T) -> Option<E>` (its own iterator) or `fn iter(self: *T) -> I` with `I.next`; the
+  loop binds the payload of `Some` and ends on `None`. `Vec<T>` has `iter` (`VecIter<T>`, element `*T`).
+  **Open edges:** a `[]mut T` is a writable view with no alias or lifetime guarantee (there is no borrow
   checker), so `mut` marks intent, it does not forbid a second view of the same bytes;
   `for i, x in s` (index first) is rejected, the index is always second. Tests: `test/unit/slices.test.xl`,
   `test/unit/for_iter.test.xl` and `test/e2e/for_iter.xl`.

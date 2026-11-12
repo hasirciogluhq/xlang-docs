@@ -27,6 +27,7 @@ All take `*String` paths and return `bool` unless noted.
 | `setTimes(path, accessSec, modifySec)` | set access and modification times in whole seconds since 1970 |
 | `symlink(target, link)` | create a symbolic link; the target text is stored as written. On Windows the file/directory kind is fixed at creation from what `target` is, so create the target first |
 | `readLink(path) -> String`, `isSymlink(path)` | the stored target (empty when `path` is not a link), and whether `path` itself is a link, dangling or not |
+| `listDir(path) -> Vec<String>` | the names of up to 64 entries (no `.`/`..`); list again after removing to go on |
 | `rename(src, dst)` | rename or move |
 | `currentDir() -> String`, `absolute(path) -> String` | working directory and path resolution |
 | `isTerminal(fd)` | whether a descriptor is a terminal |
