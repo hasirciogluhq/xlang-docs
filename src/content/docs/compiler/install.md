@@ -26,33 +26,35 @@ The compiler links with LLVM's linkers, which must be on `PATH`: `ld.lld` on Lin
 
 ## Install script
 
+Every release of `xl`, stable or pre-release, carries `install.sh` and `install.ps1` as assets, listed in its `checksums.txt`. Whichever release a script comes from, it installs the newest `xl` unless told otherwise. The commands below use the scripts of the newest stable release (the newest pre-release while there is no stable one).
+
 macOS and Linux:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/hasirciogluhq/xlang/main/scripts/install.sh | bash
+curl -fsSL https://github.com/hasirciogluhq/xlang/releases/download/v1.0.0-rc.1/install.sh | bash
 ```
 
 Windows (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/hasirciogluhq/xlang/main/scripts/install.ps1 | iex
+irm https://github.com/hasirciogluhq/xlang/releases/download/v1.0.0-rc.1/install.ps1 | iex
 ```
 
 The scripts:
 
 1. Detect the OS and CPU. On Apple silicon the arm64 build is installed even when the shell runs under Rosetta.
-2. Find the newest stable release of `xl`, or the newest pre-release while there is no stable one, or the requested one.
+2. Find the requested release of `xl` (`--version`, below).
 3. Download the archive and `checksums.txt`, and stop when the SHA-256 differs or the list has no entry for the archive.
 4. Run the new binary with `version`, then move it into place: `~/.local/bin/xl` (`%LOCALAPPDATA%\xlang\bin\xl.exe` on Windows, which is added to the user `PATH`).
 5. Run `xl lc install`, which installs the newest compiler and stdlib (below).
 
 | Option (`install.sh`) | Environment variable | Meaning |
 |-----------------------|----------------------|---------|
-| `--version <tag>` | `XL_VERSION` | `xl` release to install. Default: the newest. |
+| `--version <v>` | `XL_VERSION` | `xl` release to install. `latest` (default): the newest stable release, or the newest pre-release while there is no stable one. `latest-stable`: the newest stable release. `latest-rc`: the newest pre-release. A tag (`v1.0.0`, `1.0.0-rc.1`): that release. |
 | `--dir <path>` | `XL_INSTALL_DIR` | Install directory. Default: `$HOME/.local/bin`. |
 | `--no-toolchain` | `XL_NO_TOOLCHAIN=1` | Do not run `xl lc install`. |
 
-Pass options through a pipe with `bash -s --`, for example `curl -fsSL <url> | bash -s -- --version v1.0.0-rc.1`. `install.sh` needs `curl`, `tar` and `sha256sum` or `shasum`. `install.ps1` reads `XL_VERSION`, `XL_INSTALL_DIR` and `XL_NO_TOOLCHAIN` the same way.
+Pass options through a pipe with `bash -s --`, for example `curl -fsSL <url> | bash -s -- --version latest-rc`. `install.sh` needs `curl`, `tar` and `sha256sum` or `shasum`. `install.ps1` reads `XL_VERSION`, `XL_INSTALL_DIR` and `XL_NO_TOOLCHAIN` the same way.
 
 ## The toolchain: `xl lc`
 
