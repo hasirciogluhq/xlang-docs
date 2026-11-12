@@ -21,7 +21,7 @@ All take `*String` paths and return `bool` unless noted.
 |---|---|
 | `exists`, `isDir` | path tests |
 | `makeDir`, `makeDirAll` | create one directory, or the whole chain (existing is success) |
-| `removeFile`, `removeDir` | delete a file, or an empty directory |
+| `removeFile`, `removeDir` | delete a file, or an empty directory; a read-only one too, on every OS |
 | `removeAll` | delete a tree recursively; a missing path is success; a symbolic link is removed itself, never followed into |
 | `chmod(path, mode)` | set the permission bits (low 12 bits of `mode`, e.g. `416` = 0640); Windows has no permission bits and maps "no write bit" to the read-only attribute |
 | `setTimes(path, accessSec, modifySec)` | set access and modification times in whole seconds since 1970 |
