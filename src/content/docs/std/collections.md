@@ -43,6 +43,7 @@ from "std" import Vec, println
 | `insert(i, v)`, `remove(i)`, `swapRemove(i)` | insert before `i`; remove at `i` keeping order; remove at `i` by swapping in the last element |
 | `truncate(n)`, `clear()` | keep the first `n` elements; remove all |
 | `reserve(n)` | ensure room for `n` elements |
+| `retain(keep)` | keep the elements for which `keep(*T)` is true, in order, and drop the others; `keep` is a function or a closure: `v.retain(\|x\| *x > 0)` |
 | `iter()` | the `VecIter<T>` behind `for x in v` and `for x, i in v`; each round yields a `*T` into the `Vec`, so `*x += 1` writes the element |
 
 `vecClone<T>(*Vec<T>)` returns a copy with the same elements in the same order. It copies **only** when the element type needs no drop, because a bitwise copy of an element that needs drop would drop it twice; a droppable element type panics.

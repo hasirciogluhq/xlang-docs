@@ -1,8 +1,8 @@
 ---
-title: Archives (tar)
+title: Archives (tar, zip)
 ---
 
-`std/archive/tar` reads and writes tar archives held in memory (a `String`) and extracts to or creates from a directory.
+`std/archive/tar` reads and writes tar archives held in memory (a `String`) and extracts to or creates from a directory. `std/archive/zip` reads and extracts ZIP archives ([below](#zip)).
 
 ```
 from "std/archive/tar" import list, contents, extract, create, Entry, Kind, Error
@@ -31,4 +31,20 @@ POSIX.1-1988 ustar ([pax specification](https://pubs.opengroup.org/onlinepubs/96
 
 ## Not done
 
-Device nodes, FIFOs and sparse files are listed as `Other` and skipped. Symbolic and hard links are listed, not created. Permissions, ownership and times are stored in written archives but not applied on extraction, because the standard library has no chmod or utime yet.
+Device nodes, FIFOs and sparse files are listed as `Other` and skipped. Symbolic and hard links are listed, not created. Permissions, ownership and times are stored in written archives but not applied on extraction.
+
+## Zip
+
+```
+from "std/archive/zip" import list, contents, extract, Entry, Error
+```
+
+| Item | Meaning |
+|---|---|
+| `list(archive) -> Result<Vec<Entry>, Error>` | every entry of the central directory |
+| `contents(archive, entry) -> Result<String, Error>` | the uncompressed data of one entry, CRC-32 and size checked |
+| `extract(archive, dest) -> Result<usize, Error>` | unpacks into `dest`, creating directories, returns the number of entries written |
+
+`Entry` holds `name`, `dir` (the name ends in `/`), `method`, `flags`, `crc`, `size`, `packed` (compressed size), `mode` (Unix permission bits, 0 when the archive was not made on Unix) and the local header offset. `Error` is `Truncated`, `Invalid`, `Checksum`, `Unsupported`, `UnsafePath` or `Io`.
+
+The format is [PKWARE APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT): the end of central directory record is searched backward past a comment of up to 65535 bytes, the central directory is authoritative, and ZIP64 (the zip64 end record and the `0x0001` extra field) is read. Methods 0 (stored) and 8 (deflate, [Compression](/std/compress/)) are supported. Encrypted entries, other methods and multi-disk archives are `Unsupported`. `mode` is listed, not applied. `extract` refuses the same unsafe names as tar. Writing ZIP archives is not implemented.

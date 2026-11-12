@@ -347,7 +347,7 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
   there are no octal literals (file modes are written in decimal, `493` for `0755`); `switch` needs a subject,
   so an `if` chain stands for a subject-less switch; a `define` cannot hold an array of `str`; `&f()` of a
   temporary is `E0709` (bound to a `local` first); `for x in [&a, &b]` yields `**T`, which method calls do not
-  dereference; `Vec<T>` has no `clone`; `JsonWriter.valueString` takes `str`, not `*String`.
+  dereference; `Vec<T>` has no `clone` method (only the free function `vecClone`); `JsonWriter.valueString` takes `str`, not `*String`.
 - Debug info has compile unit, subprograms, line locations and basic types; no struct/class types.
 - `--incremental` caches per-module objects only; semantic analysis still runs for every module (no
   interface files). A MIR layer (plan 8.3) was not needed.

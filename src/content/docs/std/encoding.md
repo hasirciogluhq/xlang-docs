@@ -33,6 +33,18 @@ Base85 (RFC 1924) and ascii85 (Adobe) are different formats. They share only the
 
 A CSV record that spans lines needs the caller to join the lines when a quote is still open.
 
+### Byte order (`std/encoding/endian`)
+
+Fixed-width unsigned integers of 1 to 8 bytes inside a `String`, for binary formats:
+
+| Function | Meaning |
+|---|---|
+| `readLe(s, at, n) -> Option<u64>` | the `n`-byte little-endian value at `at` (ZIP, PE/COFF) |
+| `readBe(s, at, n) -> Option<u64>` | the `n`-byte big-endian value at `at` (network byte order: IP, TLS, DNS) |
+| `putLe(out, v, n)`, `putBe(out, v, n)` | append the low `n` bytes of `v` |
+
+The readers return `None` when `[at, at + n)` does not lie inside the `String`, so a parser of untrusted input tests each field once instead of comparing offsets by hand.
+
 ### UTF-16
 
 `std/encoding/utf8` reports invalid input and never replaces it: `utf8Decode` returns -1 and the caller
