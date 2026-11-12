@@ -46,7 +46,7 @@ from "std" import Vec, println
 | `retain(keep)` | keep the elements for which `keep(*T)` is true, in order, and drop the others; `keep` is a function or a closure: `v.retain(\|x\| *x > 0)` |
 | `iter()` | the `VecIter<T>` behind `for x in v` and `for x, i in v`; each round yields a `*T` into the `Vec`, so `*x += 1` writes the element |
 
-`vecClone<T>(*Vec<T>)` returns a copy with the same elements in the same order. It copies **only** when the element type needs no drop, because a bitwise copy of an element that needs drop would drop it twice; a droppable element type panics.
+`v.clone()` returns an independent `Vec<T>` with the same elements in the same order. An element type that needs no drop is copied bitwise; an element type that needs drop is copied with the element's own `clone(self) -> T`, so the two vectors never share an element. The method is lowered only for the element types it is called with, so a `Vec` of a droppable type without `clone` is fine as long as it is not cloned.
 
 ## Panics
 

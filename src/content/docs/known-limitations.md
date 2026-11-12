@@ -118,7 +118,7 @@ failure type must be the same in the callee and the caller. Known gap: `Option`/
 such a chain of `export *` re-exports has been reported as not visible through `import "std"` while a direct import
 (`from "std/collections/result" import Result`) and a namespace import (`import "std/collections" as C`,
 `C.Result<i32, i32>`) work. No cause is confirmed yet.
-- `Vec<T>` (`std/collections/vec`): the element accessors `get`, `first` and `last` return `*T` rather than a value, so a droppable element is never copied. `vecClone` panics for an element type that needs drop, because a bitwise copy would drop the element twice. The index panic text (`Vec: index I out of range for length L`) is built by `fmtIndexPanic` in `std/str/fmt`, on the stack and without allocating. `set` drops the old element through a plain `*slot = v` assignment. A drop-counter element type in `test/e2e/collections.xl` checks that `set`, `insert`, `remove`, `swapRemove` and `truncate` drop each element exactly once.
+- `Vec<T>` (`std/collections/vec`): the element accessors `get`, `first` and `last` return `*T` rather than a value, so a droppable element is never copied. The index panic text (`Vec: index I out of range for length L`) is built by `fmtIndexPanic` in `std/str/fmt`, on the stack and without allocating. `set` drops the old element through a plain `*slot = v` assignment. A drop-counter element type in `test/e2e/collections.xl` checks that `set`, `insert`, `remove`, `swapRemove` and `truncate` drop each element exactly once.
 - `String` (core-language phase 7): the HTTP and TLS modules still use `*u8` buffers. `fsReadAllString` is in `std/io/fs`.
 - `const` (core-language phase 2): a `const` is not a `define` constant, so it cannot be an array length, a `staticAssert`
   operand or a `define` argument. Its initializer cannot read another variable or `const` (a `GlobalRef` is not a compile-time
@@ -342,12 +342,8 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
 ## Tooling
 
 - **Language gaps met while writing `xl` in xlang** (each has a workaround in `src/`; none is decided yet):
-  a generic method inside a generic class body is `E0706` (written in an `impl<T> Type<T>` block instead);
-  `?` is rejected on the right of `&&`/`||`, in a loop condition, in a ternary branch and in `defer` (`E0761`);
-  there are no octal literals (file modes are written in decimal, `493` for `0755`); `switch` needs a subject,
-  so an `if` chain stands for a subject-less switch; a `define` cannot hold an array of `str`; `&f()` of a
-  temporary is `E0709` (bound to a `local` first); `for x in [&a, &b]` yields `**T`, which method calls do not
-  dereference; `Vec<T>` has no `clone` method (only the free function `vecClone`); `JsonWriter.valueString` takes `str`, not `*String`.
+  a `define` cannot hold an array of `str`; `for x in [&a, &b]` yields `**T`, which method calls do not
+  dereference; `JsonWriter.valueString` takes `str`, not `*String`.
 - Debug info has compile unit, subprograms, line locations and basic types; no struct/class types.
 - `--incremental` caches per-module objects only; semantic analysis still runs for every module (no
   interface files). A MIR layer (plan 8.3) was not needed.
