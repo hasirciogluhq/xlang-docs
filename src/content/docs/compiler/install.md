@@ -103,6 +103,42 @@ The command lists the releases of `hasirciogluhq/xlang` and compares the newest 
 
 The compiler and the stdlib are updated with `xl lc update`, not by `self-update`.
 
+## Uninstall
+
+The uninstall scripts are not release assets. They live on the `development` branch and are always run from there, so one script knows the layout of every version, including the older `xlang` binary and its Homebrew formula.
+
+macOS and Linux:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/hasirciogluhq/xlang/development/scripts/uninstall.sh | bash
+```
+
+Windows (PowerShell):
+
+```powershell
+irm https://raw.githubusercontent.com/hasirciogluhq/xlang/development/scripts/uninstall.ps1 | iex
+```
+
+The script scans the well-known places, prints a numbered list, and asks which entries to remove: `all`, numbers and ranges (`1 3 5-7`), or nothing. The answer is read from the terminal, so it works through a pipe.
+
+| Entry | macOS and Linux | Windows |
+|-------|-----------------|---------|
+| `xl` | `$XL_INSTALL_DIR`, `~/.local/bin`, `~/bin`, `/usr/local/bin` and every `PATH` directory; also the older `xlang` and any `xlc` copied there | `%LOCALAPPDATA%\xlang` (with `xl.old.exe`), `$XL_INSTALL_DIR`, its user `PATH` entry, and `xl.exe`/`xlc.exe` elsewhere on `PATH` |
+| Toolchain | `$XLANG_HOME` (default `~/.xlang`) | `$XLANG_HOME` (default `%USERPROFILE%\.xlang`) |
+| Package manager | the Homebrew formula `xlang` and the tap `hasirciogluhq/tap` | |
+| Shell completion | `$XDG_DATA_HOME/xlang`, `xl.fish` and `xlang.fish` in fish's completion directory, the `# >>> xlang completion >>>` block in `~/.zshrc`, `~/.bashrc` and `~/.bash_profile` | |
+| Leftovers | `.xl.new.*` of an interrupted install | `%TEMP%\xl-install-*` |
+| Editors | the `xlang.xlang` extension of VS Code, VS Code Insiders, VSCodium and Cursor | the same |
+
+A binary counts only when its bytes carry the xlang marker (`hasirciogluhq` in `xl`, `_xl_initAll` in `xlc`), so another tool named `xl` (Xen's) is never listed. A file in a system directory such as `/usr/local/bin` is removed through `sudo`. A project's `.xlang/cache` belongs to the project and stays (`xl pkg clean` empties it); `lld` is left as well.
+
+| Option (`uninstall.sh`) | Environment variable | Meaning |
+|-------------------------|----------------------|---------|
+| `--yes` | `XL_UNINSTALL_YES=1` | Remove everything found without asking. |
+| `--list` | `XL_UNINSTALL_LIST=1` (`uninstall.ps1` only) | Only print what was found. |
+
+Without a terminal to ask on, `uninstall.sh` stops unless `--yes` or `--list` is given. Options go through a pipe with `bash -s --`, for example `curl -fsSL <url> | bash -s -- --list`.
+
 ## Building from source
 
 `xl` is written in xlang. With a compiler and a checkout of the xlang repository (its `xl-std` submodule is the stdlib):
