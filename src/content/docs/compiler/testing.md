@@ -7,11 +7,11 @@ The tests of the standard library live in the `xl-std` repository (`xl-std/test/
 ## Language unit tests (`*.test.xl`)
 
 ```
-xl-std/test/unit/run.sh [xlc]           # build and run every suite on the host
-xl test xl-std/test/unit/for.test.xl # one file with the xlang CLI
+xl-std/test/unit/run.sh [xlc] [name-regex]   # build and run every suite (or the matching ones) on the host
+xl run xl-std/test/unit/for.test.xl          # one file, with the installed toolchain
 ```
 
-`xl-std/test/unit/` holds suites written in xlang itself, using `std/testing`. A file is a test when it is named `*.test.xl` and has an `@entry fn main() -> i32` that ends in `suiteRun(&s)`; a non-zero exit status fails the file. The runner accepts a file, a directory, a glob (`**`, `*`, `?`), `re:<regex>` or a path substring.
+`xl-std/test/unit/` holds suites written in xlang itself, using `std/testing`. A file is a test when it is named `*.test.xl` and has an `@entry fn main() -> i32` that ends in `suiteRun(&s)`; a non-zero exit status fails the file. `run.sh` takes the compiler (default `$XLC`, else `xlc` on `PATH`) and an optional extended regular expression matched against the file name without `.test.xl`.
 
 ```xlang
 from "std/testing" import Suite, T, suiteInit, test, suiteRun, expectEq
@@ -33,10 +33,10 @@ The suites `slices.test.xl` and `for_iter.test.xl` cover slices (`[]T`, `[]mut T
 ## End-to-end programs
 
 ```
-xmake run e2e
+xl-std/test/e2e/run.sh [xlc]
 ```
 
-`xl-std/test/e2e/` holds one `.xl` program per feature. `xmake run e2e` (in the xlang repository) compiles the runner `xl-std/test/e2e/runner.xl`, which is itself an xlang program, with the compiler named by `$XLC` (default `xlc`) and runs it. The runner reads the table `tests.txt` (`run|name|exit code|output substring` and `diag|name|flag|diagnostic code or ok`), builds each program with the compiler under test, runs it with `Command.output()` from `std/os/process` (see [Processes](/std/process/)), and checks the exit code and one substring of the output. It runs natively on Linux and macOS, one entry at a time, and takes an optional name filter (a plain substring of the table line):
+`xl-std/test/e2e/` holds one `.xl` program per feature. Besides `run.sh` (below), the runner `xl-std/test/e2e/runner.xl` is itself an xlang program. It reads the table `tests.txt` (`run|name|exit code|output substring` and `diag|name|flag|diagnostic code or ok`), builds each program with the compiler under test, runs it with `Command.output()` from `std/os/process` (see [Processes](/std/process/)), and checks the exit code and one substring of the output. It runs natively on Linux and macOS, one entry at a time, and takes an optional name filter (a plain substring of the table line):
 
 ```
 xlc xl-std/test/e2e/runner.xl -M std=xl-std --import std -DfeatureDefaultAllocator=true -o e2e-runner
@@ -44,7 +44,7 @@ xlc xl-std/test/e2e/runner.xl -M std=xl-std --import std -DfeatureDefaultAllocat
 ./e2e-runner xlc xl-std xl-std/test/e2e raii           # the entries whose line contains "raii"
 ```
 
-The cross-target legs below, the TLS and HTTPS server/client pairs and the package cases are run by the shell script `xl-std/test/e2e/run.sh`, which takes the compiler path as its first argument (the package cases run only when the `xlang` CLI is installed). Each program is cross-built and run on the other targets the host can reach:
+The cross-target legs below and the TLS and HTTPS server/client pairs are run by the shell script `xl-std/test/e2e/run.sh`, which takes the compiler path as its first argument (default `$XLC`, else `xlc` on `PATH`). Each program is cross-built and run on the other targets the host can reach:
 
 | Target | How |
 |---|---|
@@ -63,12 +63,11 @@ XLANG_E2E_FILTER=math_ xl-std/test/e2e/run.sh          # every test whose name c
 XLANG_E2E_FILTER='^process$' xl-std/test/e2e/run.sh    # exactly one test
 XLANG_E2E_FILTER='^(try|sched)$' xl-std/test/e2e/run.sh
 XLANG_E2E_FILTER=diag/ xl-std/test/e2e/run.sh          # the compile-time diagnostic cases
-XLANG_E2E_FILTER=packages xl-std/test/e2e/run.sh       # the package system cases
 ```
 
 The filter is a POSIX extended regular expression matched against the test name, not against the target label, so one name selects all four legs of that test. `run.sh` also takes the compiler path as its first argument: `xl-std/test/e2e/run.sh xlc`.
 
-The independent legs run in a pool of workers, one per CPU by default. `XLANG_E2E_JOBS=1` serialises them, which is easier to read when a failure is being traced, and a larger value helps on a machine with many cores. The server and client pairs (TLS, HTTPS) and the package cases stay sequential: each needs a free port or a shared project directory.
+The independent legs run in a pool of workers, one per CPU by default. `XLANG_E2E_JOBS=1` serialises them, which is easier to read when a failure is being traced, and a larger value helps on a machine with many cores. The server and client pairs (TLS, HTTPS) stay sequential: each needs a free port.
 
 ### Environment switches
 

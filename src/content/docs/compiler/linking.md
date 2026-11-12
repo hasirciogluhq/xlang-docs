@@ -13,19 +13,19 @@ This document describes how the compiler turns a program into an executable, sha
                                                               \-> in-process archiver -> static library
 ```
 
-`xl build file.xl` runs the whole pipeline. `--emit` selects where it stops or what it produces: `exe` (default), `obj`, `ir`, `bc`, `header`, `static` (archive), `shared`. `xl run file.xl` builds into a temporary executable and runs it.
+`xlc file.xl` runs the whole pipeline (`xl build file.xl` runs it with the project's stdlib and packages, see [The xl tool](/compiler/cli/)). `--emit` selects where it stops or what it produces: `exe` (default), `obj`, `ir`, `bc`, `header`, `static` (archive), `shared`. `xl run file.xl` builds into a temporary executable and runs it.
 
 ---
 
 ## What gets linked
 
-- The program's object code, including the stdlib modules it imports (the stdlib is embedded in the compiler; `--no-std`, `--std=<dir>` and `--std=host/user/repo` change that) and the modules of the installed packages it imports.
-- Prebuilt object files and archives that installed packages list in `[[native]]` entries matching the target (executables and shared libraries only; see [Packages](/compiler/packages/)).
+- The program's object code, including the modules of every module root it imports: the stdlib (`-M std=<dir> --import std`) and the packages (`-M <repository>=<dir>`).
+- Prebuilt object files and archives named on the command line after the program root: `xlc main.xl vendor/fast.o vendor/libz.a`, or `xl build main.xl vendor/fast.o vendor/libz.a` (executables and shared libraries only).
 - For an executable, the compiler-generated entry stub (see below).
 - Nothing else: there is no C runtime, no implicit `-lc`, no `-pthread`. Memory routines such as `memcpy` are stdlib code exported with C names.
-- `--incremental` writes one object per module into a cache directory (`--cache-dir`, default `.xlang-cache` next to the output) and reuses unchanged ones.
+- `--incremental` writes one object per module into a cache directory (`--cache-dir`, default `.xlc-cache` next to the output) and reuses unchanged ones.
 
-There is no way to pass extra objects or archives on the command line; a package supplies them through `[[native]]`. A static library built by xlang contains the stdlib modules it imported, so a library meant to be linked into another xlang program is built with `--no-std`.
+An object or static library built by xlang contains the stdlib modules it imported, so one meant to be linked into another xlang program is built without the stdlib (plain `xlc lib.xl --emit=obj`, no `-M std`), or the link fails with duplicate symbols.
 
 ---
 
@@ -60,7 +60,7 @@ declare fn helper(x: i32) -> i32
 - `@library("name")` works on all three OSes, and only for declarations that the program reaches (see "Reachability pruning" below):
   - Windows: the compiler generates an import library for each named DLL from the declared symbols (with `llvm-dlltool`, so no Windows SDK is needed) and passes it to `lld-link`.
   - macOS: each used library name is passed as `-l<name>`, with `-syslibroot` set to the SDK from `xcrun --show-sdk-path`, so `@library("System")` links `libSystem`.
-  - Linux: each used library name is passed as `-l<name>` after the objects. The link is static, and the compiler adds no search path, so the archive must be found by the linker (a package supplies it through `[[native]]`).
+  - Linux: each used library name is passed as `-l<name>` after the objects. The link is static, and the compiler adds no search path, so the archive must be found by the linker or named on the command line.
 - OS libraries may be declared in any stdlib area (for example `std/thread` may create a thread through a library call); user code reaches them only through stdlib functions.
 
 ## Reachability pruning
@@ -83,4 +83,5 @@ Before code generation the compiler removes every function and global that no ro
 | Document | Role |
 |----------|------|
 | [Language Reference](/language/) | `declare`, `@library`, `export(c)`, entry points |
-| [Packages](/compiler/packages/) | Dependencies from git repositories, `[[native]]` prebuilt files |
+| [The xl tool](/compiler/cli/) | `xl build`, the build environment |
+| [Packages](/compiler/packages/) | Dependencies from git repositories |
