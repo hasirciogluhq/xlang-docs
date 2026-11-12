@@ -85,6 +85,10 @@ generic table, recorded in `linux-arm64.md`.
 | rename | 82 | `std/io/dir` |
 | mkdir | 83 | `std/io/dir` (`mkdir(path, mode)`, mode 0755) |
 | rmdir | 84 | `std/io/dir` |
+| symlinkat | 266 | `std/io/files` `symlink` (`symlinkat(target, AT_FDCWD, linkpath)`; `AT_FDCWD` is -100) |
+| readlinkat | 267 | `std/io/files` `readLink`, `isSymlink` (`readlinkat(AT_FDCWD, path, buf, size)`: the length without a NUL, or -errno; -EINVAL when the path is not a link) |
+| fchmodat | 268 | `std/io/files` `chmod` (`fchmodat(AT_FDCWD, path, mode)`, mode & 07777, links followed) |
+| utimensat | 280 | `std/io/files` `setTimes` (`utimensat(AT_FDCWD, path, times, 0)`; `times` is two `timespec` {tv_sec i64, tv_nsec i64}: access then modification) |
 
 `isatty` is `ioctl(fd, TCGETS, &termios)` (`TCGETS` = 0x5401, `include/uapi/asm-generic/ioctls.h`): 0 means a terminal. A `struct termios` is at most 60 bytes (`struct termios2` in the same header family is 44); 64 bytes of buffer are used.
 | geteuid | 107 | elevation check |

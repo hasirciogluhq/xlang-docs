@@ -53,3 +53,5 @@ Process spawning (`std/sys/spawn`) calls the libSystem interface (`posix_spawn` 
 Checked and absent at the number tried: `__sysctl` (the entry at that position is ntp_adjtime, 527),
 and `accept_nocancel` (366 is bsdthread_register). Numbers 16 and 366 are not the calls they are
 on other systems, so do not assume a Linux or FreeBSD number carries over.
+
+Links, permissions and times (`std/io/files`) call libSystem, whose interface Apple keeps stable, rather than raw numbers: `chmod(path, mode)`, `utimensat(AT_FDCWD, path, times, 0)` with `AT_FDCWD` = -2 and two `timespec` (access, modification), `symlink(target, linkpath)` and `readlink(path, buf, size)` (the length without a NUL, or -1). Man pages: chmod(2), utimensat(2), symlink(2), readlink(2).

@@ -61,3 +61,5 @@ Also confirmed: ioctl 29, sendmsg 211, recvmsg 212, madvise 233, sched_yield 124
 ## Not yet verified
 
 The ioctl request numbers for DRM, sysfs and block devices (they come from each driver or subsystem header, not from this table).
+
+Links, permissions and times (`std/io/files`), from the same header: symlinkat 36, readlinkat 78, fchmodat 53 and utimensat 88, all called with `AT_FDCWD` (-100) as the directory; arm64 has no plain `symlink`, `readlink`, `chmod` or `utimes`.

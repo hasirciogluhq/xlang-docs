@@ -22,7 +22,11 @@ All take `*String` paths and return `bool` unless noted.
 | `exists`, `isDir` | path tests |
 | `makeDir`, `makeDirAll` | create one directory, or the whole chain (existing is success) |
 | `removeFile`, `removeDir` | delete a file, or an empty directory |
-| `removeAll` | delete a tree recursively; a missing path is success |
+| `removeAll` | delete a tree recursively; a missing path is success; a symbolic link is removed itself, never followed into |
+| `chmod(path, mode)` | set the permission bits (low 12 bits of `mode`, e.g. `416` = 0640); Windows has no permission bits and maps "no write bit" to the read-only attribute |
+| `setTimes(path, accessSec, modifySec)` | set access and modification times in whole seconds since 1970 |
+| `symlink(target, link)` | create a symbolic link; the target text is stored as written. On Windows the file/directory kind is fixed at creation from what `target` is, so create the target first |
+| `readLink(path) -> String`, `isSymlink(path)` | the stored target (empty when `path` is not a link), and whether `path` itself is a link, dangling or not |
 | `rename(src, dst)` | rename or move |
 | `currentDir() -> String`, `absolute(path) -> String` | working directory and path resolution |
 | `isTerminal(fd)` | whether a descriptor is a terminal |
