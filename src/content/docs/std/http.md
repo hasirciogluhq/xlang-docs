@@ -125,7 +125,7 @@ fn run() -> Result<bool, HttpError> {
 
 | Type | Members |
 |---|---|
-| `Client` | `send(&req)`, `stream(&req, sink)`, `get(&url)`, `head(&url)`, `post(&url, contentType, &body)`, `put(&url, contentType, &body)`; `sendVia(t, &req)` and `streamVia(t, &req, sink)` over your own `Transport`; fields `timeoutMs` (30000, the read timeout; 0 waits forever), `maxRedirects` (10), `retries` (2), `userAgent` |
+| `Client` | `send(&req)`, `stream(&req, sink)`, `get(&url)`, `head(&url)`, `post(&url, contentType, &body)`, `put(&url, contentType, &body)`, `delete(&url)`; `sendVia(t, &req)` and `streamVia(t, &req, sink)` over your own `Transport`; fields `timeoutMs` (30000, the read timeout; 0 waits forever), `maxRedirects` (10), `retries` (2), `userAgent` |
 | `Request` | `Request(method, &url)`; fields `method`, `url`, `headers`, `body` |
 | `Response` | `ok()` (a 2xx status), `header(name)`; fields `status`, `reason`, `headers`, `body` (empty after `stream`), `url` (the URL that answered, after redirects) |
 | `Headers` | `add(name, value)`, `set(name, value)` (replaces every value), `remove(name)`, `get(name)` (the first value, empty when absent), `has(name)`, `length()`, `writeTo(&out)`; names compare case-insensitively; field `items` |
