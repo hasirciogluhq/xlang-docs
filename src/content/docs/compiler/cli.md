@@ -27,7 +27,7 @@ xl run -- --port 8080             # main.xl, with arguments that look like flags
 ```
 
 - **The file.** The program root is the `.xl` file named on the command line. Without one, `main.xl` of the project root (the directory of the nearest `xlang.toml` above the current directory) is used, then `main.xl` of the current directory. A missing file is `E0711`.
-- **Flags** are the compiler's own (`xlc --help`: `-O2`, `-o out`, `--emit=obj`, `-D NAME=VALUE`, `--target`, `--safety`, ...) and pass through unchanged, in order. `--std=<dir>` is xl's: it replaces the stdlib for this call (see [the build environment](#the-build-environment)). `check` and `build` take flags before and after the file; anything else that is not a flag is `E0740`.
+- **Flags** are the compiler's own (`xlc --help`: `-O2`, `-o out`, `--emit=obj`, `-D NAME=VALUE`, `--target`, `--safety`, ...) and pass through unchanged, in order. `--std=<dir>` is xl's: it replaces the stdlib for this call (see [the build environment](#the-build-environment)). `check` and `build` take flags before and after the file, and pass any other argument to the compiler as a prebuilt object or library to link (`xl build app.xl vendor/libz.a`); see [Linking](/compiler/linking/).
 - **`run`** builds the program into a private temporary directory (`$TMPDIR`, `%TEMP%` on Windows), runs it with the remaining arguments and removes the directory afterwards. Everything after the file, or after `--`, belongs to the program, so `xl run app.xl --help` passes `--help` to `app`. The program's exit status becomes xl's; a failed compile returns the compiler's status.
 - **No network.** Builds read `xlang.lock` and `.xlang/cache` only. A package that is not in the cache is `E0741` with the fix `run xl pkg install`.
 - `XL_VERBOSE=1` prints the full `xlc` command line before running it.
@@ -35,7 +35,7 @@ xl run -- --port 8080             # main.xl, with arguments that look like flags
 Every build hands the compiler its environment, then the caller's flags:
 
 ```
-xlc <file> -M std=<stdlib> --import std -DfeatureDefaultAllocator=true \
+xlc <file> <objects and libraries> -M std=<stdlib> --import std -DfeatureDefaultAllocator=true \
     -M <repository>=<dir> ...  <[build] flags of xlang.local.toml>  <your flags>
 ```
 
