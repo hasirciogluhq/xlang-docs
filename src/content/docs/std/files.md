@@ -31,5 +31,6 @@ All take `*String` paths and return `bool` unless noted.
 | `rename(src, dst)` | rename or move |
 | `currentDir() -> String`, `absolute(path) -> String` | working directory and path resolution |
 | `isTerminal(fd)` | whether a descriptor is a terminal |
+| `enableEscapes(fd) -> bool` | makes the terminal at `fd` interpret escape sequences (colors, cursor movement); true when it does. Linux and macOS terminals always do, so this is `isTerminal(fd)` there; a Windows console needs virtual terminal processing turned on, which this does once per console (Windows 10 1511 and later). False for a file, a pipe or an older Windows console |
 
 The system calls behind them are listed in [System information](/std/system/) and [System calls](/std/syscalls/).
