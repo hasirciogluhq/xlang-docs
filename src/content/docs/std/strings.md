@@ -68,7 +68,7 @@ from "std" import String, println
 |---|---|
 | Constructors | `init()` (empty), `init(str)`, `init(usize, u8)` (n copies of a byte) |
 | Reading | `length`, `asStr`, `cstr`, `at`, `slice`, `find`, `startsWith`, `endsWith` |
-| Changing | `push`, `append(str)`, `append(*String)`, `clone`, `clear`, `reserve` |
+| Changing | `push`, `append(str)`, `append(*String)`, `append(String)` (a String given away, such as `format(...)`), `clone`, `clear`, `reserve` |
 | Comparing and case | `equals`, `toLowerAscii`, `toUpperAscii` (both return new `String`s) |
 
 Empty strings do not allocate, and there is no small-string optimization. Appending a view of a `String`'s own buffer is not supported.

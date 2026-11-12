@@ -38,7 +38,7 @@ Every call returns an `S3Result`:
 - `ok`, `status`: success and the HTTP status.
 - `code`, `message`: the S3 error code and text on failure.
 - `body`, `etag`, `contentType`: the response payload and headers.
-- `clientError`: a transport error from the HTTP client (`CLIENT_ERR_*`), `0` when the request reached the server.
+- `clientError`: `Option<HttpError>`, the HTTP client's error when no complete response arrived (its text is in `message`), `None` when the server answered.
 - `UploadId()`: the upload identifier of a `CreateMultipartUpload` answer.
 
 ## Example

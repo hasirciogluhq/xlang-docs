@@ -90,7 +90,9 @@ The original plan is implemented except the items below, which are intentionally
 - **Static libraries and objects own no entry:** `--emit=static` and `--emit=obj` export weak `_xl_initAll` and `_xl_finiAll` that run only the `@init` and `@fini` functions of that build. A linking executable keeps its own strong `_xl_initAll`, which runs the init functions of the program it was compiled as, so a prebuilt archive's init functions run only when the host calls that archive's `_xl_initAll` itself. Open decision: one init table per archive, or generated per-object init sections.
 - **Shared libraries on Windows (open decision, needs confirmation):** `--emit=shared` builds a DLL with neither hook, so its `@init` functions do not run on load, its `@fini` functions do not run on unload, and its `@entry` never runs by itself; the host must call `_xl_initAll` and `_xl_finiAll`. A `DllMain` hook (DLL_PROCESS_ATTACH runs `_xl_initAll` and then `@entry`; DLL_PROCESS_DETACH runs `_xl_finiAll`) is not implemented, because Windows work is deferred by the project rules. Whether the Windows hook is in scope now is the open decision.
 - **Entry arguments in shared libraries:** the `@entry` argument form (`argc: i32`, `argv: **u8`) is refused in a shared library (`E0755`); a library has no command line. On Windows it needs the `args` role, which the stdlib provides.
-- **Payload copies out of a `Result`/`Option` are shallow:** a payload bound in a `switch` is a copy, so copying a droppable payload (such as a `String`) out of the variant (`out = v`) frees it twice. Read it in place inside the `case`.
+- **Payload copies out of a `Result`/`Option` are shallow:** a payload bound in a `switch` is a copy, so copying a droppable payload (such as a `String`) out of the variant (`out = v`) frees it twice. Read it in place inside the `case`. `resultTake` and `resultOrElse` copy the same way, so for a droppable payload they are unsafe too; `?` is the only form that moves a payload out correctly.
+- **A ternary that picks a droppable local copies it:** `return flag ? s : String("x")`, where `s` is a local `String`, copies `s` bitwise and still drops `s` at the end of the scope, so the result points at freed memory. Use `if`/`else` (`if !flag { s = String("x") }` then `return s`). Temporaries (`a.clone()`, `format(...)`) in either branch are fine.
+- **Generic method calls cannot also convert to an interface:** in `obj.apply(&concrete, |x| ...)`, where the parameter is an interface type and `F` is inferred, the call is `E0724` (`cannot infer F`). Bind the interface value to a typed local first: `local t: Shape = &concrete` and then `obj.apply(t, |x| ...)`.
 - **Tar extraction ignores modes, times and links:** `std/io/files` has `chmod`, `setTimes` and `symlink`, but the extractor does not call them yet (see [Archives](/std/archive/)).
 - **Windows links and permissions:** there are no POSIX permission bits (only the read-only attribute is mapped), a symbolic link's file/directory kind is fixed when it is created, and creating one needs Developer Mode or the `SeCreateSymbolicLinkPrivilege` privilege (the unprivileged flag is passed, which works only with Developer Mode). `readLink` reads symbolic links only, not junctions.
 - **macOS unload hook does not run:** `_xl_finiAll` sits in `__DATA,__mod_term_func`, which dyld runs when an image is unloaded. A process exit does not unload a dylib, and `dlclose` is not called by the compiler or the stdlib, so `@fini` of a shared library does not run on macOS unless the host unloads it. This path is not verified at runtime.
@@ -234,8 +236,13 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
   request bodies are not supported); the request buffer is capped by `maxHeaderBytes`/`maxBodyBytes`. There is
   no panic recovery middleware, no body binding and no template/static-file helpers. Routes are matched by a
   linear scan (static first), not a radix tree.
-  The client is `Client` (`Get`, `Head`, `Delete`, `Post`, `Put`, http and https, redirects); it has no
-  cookies, keep-alive, compression, proxy, IPv6 or HTTP/2, and no streaming bodies. Source is split in `std/http/*.xl`.
+  The client is `Client` (`send`, `stream`, `get`, `head`, `post`, `put`; http and https, redirects, retries,
+  streamed bodies, custom `Transport`s). It has no cookie jar, keep-alive, response decompression, proxy
+  support, IPv6, HTTP/2, `Expect: 100-continue` or streamed request bodies (a request body is a `String`). The
+  read timeout covers each read, not the whole exchange, and the TLS handshake uses the fixed 20 s timeout of
+  `std/tls`. There is no `delete(url)` shortcut because `delete` is a keyword and cannot name a method (use
+  `send(&Request("DELETE", &url))`); open decision: allow keywords as method names after `fn` and `.`.
+  Source is split in `std/http/*.xl`.
 - **`std/tls` is TLS 1.3 only, client and server:** X25519 key exchange, suites `TLS_CHACHA20_POLY1305_SHA256`
   (preferred) and `TLS_AES_128_GCM_SHA256`; no TLS 1.2 or older (a TLS 1.2-only peer fails with `TLS_ERR_VERSION`;
   the server answers it with a `protocol_version` alert), no session resumption/0-RTT/NewSessionTicket, no
