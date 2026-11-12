@@ -383,8 +383,8 @@ export { sysClockSeconds, sysRandom } from "sys"
 - Modules may import each other. Every module of the program loads before any import or export is resolved, so a cycle is legal. A name that reaches an importer only through an `export *` loop, and that no module in the loop exports, is `E0711`.
 - Only `export`ed declarations are visible to importers.
 - Two exports or imports of the same name are an error; the same entity reaching a module by two paths is warning `W0401`.
-- `import "std"` gives the whole standard library; the compiler itself loads the default stdlib unless `--no-std` is given. `--std=<dir>`, `--std=host/user/repo[@tag]` and `[std]` in `xlang.toml` replace the embedded copy.
-- An import path that looks like a repository path but is neither a file nor under a dependency is `E0745`.
+- `import "std"` gives the whole standard library. The compiler has no stdlib of its own: it is a module root like any package (`xlc -M std=<dir> --import std`), and `xl` passes the installed one (or the one `xlang.local.toml`, `$XLANG_STD` or `--std=<dir>` names); see [The xl tool](/compiler/cli/#the-build-environment).
+- An import of `NAME` or `NAME/sub` resolves inside the directory of the module root `-M NAME=DIR`; `xl` adds one root per package. Other paths are relative to the importing file.
 
 ---
 
@@ -483,13 +483,13 @@ All of it is in `std/`; `import "std"` or `from "std" import name` brings it in,
 | `std/runtime` | `panic` (the registered `panic`), `unwind` (panic unwinding and the registered `unwind`, what `try`/`catch` run on) and `context` (stack switching for the scheduler) |
 | `std/testing` | the test framework |
 
-Memory-related defaults can be changed with `--std-features` (for example `-default-allocator`); each feature becomes a `featureXxx` constant for `#if`.
+Stdlib features are plain definitions that become `featureXxx` constants for `#if`: `-DfeatureDefaultAllocator=true` registers the default `alloc` and `free` (`xl` always passes it; a program that registers its own allocator leaves it out by calling `xlc` directly).
 
 ---
 
 ## Testing
 
-`xl test` finds `*.test.xl` files, builds and runs each one, and fails a file when its exit status is not 0. A test file uses `std/testing`:
+A test file is a program named `*.test.xl`; it fails when its exit status is not 0 (`xl run math.test.xl`). It uses `std/testing`:
 
 ```
 from "std/testing" import Suite, T, suiteInit, test, suiteRun, expectEq
@@ -511,21 +511,18 @@ Matchers are typed functions (`expect`, `expectTrue`, `expectEq`, `expectEqUInt`
 ## Command line
 
 ```
-xl build file.xl [-o out] [--emit exe|obj|ir|bc|header|static|shared]
-xl run file.xl
-xl check file.xl
-xl parse file.xl
-xl layout file.xl [Type]
-xl test [patterns...]
-xl install|update|remove|list|clean
-xl completions bash|zsh|fish|install
-xl self-update [--check]
-xl --explain E0501
+xl run [flags] [file.xl] [args...]
+xl build [flags] [file.xl] [objects...]
+xl check [flags] [file.xl]
+xl env [--json] [file.xl]
+xl pkg add|install|update|remove|list|clean
+xl lc install|update|list|use
+xl self-update [--check] [--force]
 ```
 
-Common flags: `-D`/`-U`, `--target <triple>`, `-O 0..3`, `-g`, `--cpu`, `--mangle xl|none`, `--safety checked|unchecked`, `--no-std`, `--std <dir|host|user|repo[@tag]>`, `--std-features`, `--layout-scheme`, `--layout-history`, `--incremental`, `--cache-dir`, `--print-cfg`, `--context N`, `--allow`/`--deny`/`--warn-all`/`--allow-all`, `--diag-format text|json`. Global: `--version`, `--color auto|always|never` (see [Installing the compiler](/compiler/install/)). `xl self-update` installs the latest release.
+`xl` is documented in [The xl tool](/compiler/cli/). The flags of `build`, `check` and `run` are the compiler's: `-o`, `--emit exe|obj|ir|bc|header|static|shared`, `--check`, `-D`/`-U`, `--target <triple>`, `-O0..3`, `-g`, `--cpu`, `--mangle xl|none`, `--safety checked|unchecked`, `-M NAME=DIR`, `--import SPEC`, `--layout-scheme`, `--layout-history`, `--dump-layout [Type]`, `--dump-hir`, `--incremental`, `--cache-dir`, `--print-cfg`, `--context N`, `--allow`/`--deny`/`--warn-all`/`--allow-all`, `--diag-format text|json`, `--color auto|always|never` (`xlc --help`).
 
-Diagnostics have codes: `E` for errors, `W` for warnings (for example `E0501`, `W0402`); `--explain CODE` prints the long explanation, and warnings are controlled with `--allow`, `--deny` and `@allow`.
+Diagnostics have codes: `E` for errors, `W` for warnings (for example `E0501`, `W0402`); `xlc --explain CODE` prints the long explanation, and warnings are controlled with `--allow`, `--deny` and `@allow`.
 
 ---
 

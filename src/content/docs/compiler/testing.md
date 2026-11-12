@@ -78,4 +78,12 @@ The independent legs run in a pool of workers, one per CPU by default. `XLANG_E2
 | `XLANG_E2E_NET=1` | adds the tests that need the Internet (`https`) |
 | `XLANG_E2E_S3=1` | adds `s3`, which needs an S3-compatible server on `127.0.0.1:18333` |
 
-Run the full suite once at the end of a large change, and the single relevant program while working. A new e2e program is added to the `tests` array in `run.sh` (and to `docs/` for the feature it covers), where the fields are the name, the expected exit code, a substring of the expected output, whether the program uses OS threads, and whether it can run on Windows.
+Run the full suite once at the end of a large change, and the single relevant program while working. A new e2e program is added to the `tests` array in `run.sh`, where the fields are the name, the expected exit code, a substring of the expected output, whether the program uses OS threads, and whether it can run on Windows.
+
+## The xl tool
+
+```
+test/run.sh <xl> <xlc> <stdlib dir>
+```
+
+`test/run.sh` in the xlang repository checks every command of [xl](/compiler/cli/) against a built `xl`, a compiler and a stdlib checkout, without the network: packages are local git repositories (`source = "<dir>"`, one of them with CRLF line ends), and `xl lc` and `xl self-update` read releases from a directory through `$XLANG_MIRROR`. It runs in temporary directories with its own `$XLANG_HOME`, so the installed toolchain is never touched. CI runs it on Linux and macOS (x86-64 and arm64) and on Windows x86-64 (Git Bash).
