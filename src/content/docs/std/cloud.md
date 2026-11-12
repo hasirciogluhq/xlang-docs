@@ -63,7 +63,7 @@ The unit tests (`std/cloud/s3.test.xl`) check the signing vectors and the reques
 
 ```
 docker run -d -p 18333:8333 -v "$PWD/test/e2e/seaweedfs.json:/etc/seaweedfs/s3.json" chrislusf/seaweedfs server -s3 -s3.config=/etc/seaweedfs/s3.json
-XLANG_E2E_S3=1 xmake run e2e
+XLANG_E2E_S3=1 XLANG_E2E_FILTER='^s3$' test/e2e/run.sh
 ```
 
 The program creates a bucket, puts, gets, heads and lists objects, fetches a presigned URL over HTTP, uploads a 5 MiB part and a 4-byte part, and checks the assembled size and the 404 after a delete. It can be rerun against the same server.

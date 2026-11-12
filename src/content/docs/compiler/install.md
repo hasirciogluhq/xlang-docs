@@ -1,94 +1,114 @@
 ---
-title: Installing the compiler
+title: Install
 ---
 
-This page covers the prebuilt `xlang` compiler: the install script, `xl self-update`, and what is supported. Installing packages with `xl install` is a different topic: see [Packages](/compiler/packages/).
+xlang is three pieces, each released on its own: the tool **`xl`** ([hasirciogluhq/xlang](https://github.com/hasirciogluhq/xlang)), the compiler **`xlc`** ([hasirciogluhq/xlc](https://github.com/hasirciogluhq/xlc)) and the standard library **`xl-std`** ([hasirciogluhq/xl-std](https://github.com/hasirciogluhq/xl-std)). You install `xl`; `xl` installs and updates the other two (`xl lc`) and itself (`xl self-update`). Packages are a different topic: see [Packages](/compiler/packages/).
 
 ## Supported platforms
 
-| Host | arm64 | amd64 |
-|------|-------|-------|
-| macOS | yes | yes |
+| Host | x86-64 | arm64 |
+|------|--------|-------|
 | Linux | yes | yes |
-| Windows | no native build | no native build |
+| macOS | yes | yes |
+| Windows | yes | no release yet |
 
-Releases are built by the `release` workflow when a `v*` tag is pushed. Each release holds one archive per OS and CPU, `xlang_<version>_<os>_<arch>.tar.gz` (`os` is `darwin` or `linux`, `arch` is `arm64` or `amd64`), and a combined `checksums.txt`. Tags that contain `-` are pre-releases: the installer and `self-update` never pick them as "latest". The workflow refuses to build when the version declared in `xmake.lua` (`xlang_version`) differs from the tag, because that value is what `xl --version` reports and what `self-update` compares.
+Every release holds one archive per OS and CPU and a combined `checksums.txt` (`sha256sum` format):
 
-## Install script (macOS and Linux)
+| Repository | Asset |
+|------------|-------|
+| `xlang` | `xl_<version>_<os>_<arch>.tar.gz` (`.zip` on Windows), the binary `xl` at the archive root |
+| `xlc` | `xlc_<version>_<os>_<arch>.tar.gz` (`.zip` on Windows), the binary `xlc` at the archive root |
+| `xl-std` | `xl-std_<version>.tar.gz`, one `xl-std_<version>/` directory with `index.xl` (the stdlib is source, one archive for every host) |
+
+`os` is `linux`, `darwin` or `windows`, `arch` is `amd64` or `arm64`. A tag that contains `-` (`v1.0.0-rc.1`) is a pre-release.
+
+The compiler links with LLVM's linkers, which must be on `PATH`: `ld.lld` on Linux, `ld64.lld` on macOS (`brew install lld`), `lld-link` on Windows. See [Linking](/compiler/linking/).
+
+## Install script
+
+macOS and Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/hasirciogluhq/xlang/main/scripts/install.sh | bash
 ```
 
-The script:
+Windows (PowerShell):
 
-1. Detects the OS and CPU (`uname`). On Apple silicon it installs the arm64 build even when the shell runs under Rosetta.
-2. Finds the latest release through the GitHub API, or uses the requested one.
-3. Downloads the archive and `checksums.txt`, and stops when the SHA-256 differs or `checksums.txt` has no entry for the archive.
-4. Runs the new binary with `--version`, and only then copies it next to the target and renames it into place, so a running `xlang` is replaced atomically.
-5. Prints the `PATH` line to add when the install directory is not on `PATH`.
-
-| Option | Environment variable | Meaning |
-|--------|----------------------|---------|
-| `--version <x.y.z>` | `XLANG_VERSION` | Release to install. Default: the latest release. |
-| `--dir <path>` | `XLANG_INSTALL_DIR` | Install directory. Default: `$HOME/.local/bin`. |
-
-Pass options through a pipe with `bash -s --`, for example `curl -fsSL <url> | bash -s -- --version 0.1.0`. The script needs `curl`, `tar` and `sha256sum` or `shasum`.
-
-Homebrew: `brew install hasirciogluhq/tap/xlang`. The release workflow updates the tap for every non-pre-release tag.
-
-## Windows
-
-The compiler itself runs on macOS and Linux only. On Windows, install WSL and run the install script inside it. The compiler can still build Windows executables there (`--target x86_64-pc-windows-msvc`); see [Linking](/compiler/linking/).
-
-Target support from another host, as of the current development tree:
-
-- `x86_64-pc-windows-msvc` builds end to end; `std/sys`, `std/net`, `std/tls` and `std/io` have Windows branches (`ntdll`/`kernel32`/`ws2_32`/`bcrypt`), and the entry stub is x86-64 assembly.
-- `aarch64-pc-windows-msvc` does **not** build: the compiler emits an x86-64 entry stub for every Windows target, so even an empty `@entry` function fails under the aarch64 assembler. Recorded in [known limitations](/known-limitations/).
-- Building the compiler itself for Windows from source is not supported yet: several host-side source files still call POSIX process and path functions. Nothing in this repository has been compiled with MSVC.
-
-## Updating: `xl self-update`
-
-```bash
-xl self-update
-xl self-update --check   # report only, install nothing
-xl self-update --force   # reinstall the latest release even when current
+```powershell
+irm https://raw.githubusercontent.com/hasirciogluhq/xlang/main/scripts/install.ps1 | iex
 ```
 
-The command asks GitHub for the latest release and compares it with the running version (`xl --version`). When the installed version is the latest or newer, it prints `xlang <version> is up to date` and exits with 0. Otherwise it downloads the archive for the host OS and CPU, verifies it against `checksums.txt`, runs the new binary with `--version`, and replaces the running executable in place. A failed download, a checksum mismatch or a binary that does not start leaves the installed compiler untouched.
+The scripts:
 
-- A compiler installed by Homebrew (its path contains `/Cellar/`) is not replaced; the command says to run `brew upgrade xlang`.
-- When the directory of the running binary is not writable, the command fails with the path it could not write; rerun with enough permissions or reinstall with the script.
-- The command needs `curl`, `tar` and `sha256sum` or `shasum` on `PATH`. It exits with 1 and an error when no release is published yet or the network is unreachable.
-- The version comes from `set_version` in `xmake.lua`; a build from source reports that version, so it can be older than the latest release.
+1. Detect the OS and CPU. On Apple silicon the arm64 build is installed even when the shell runs under Rosetta.
+2. Find the newest stable release of `xl`, or the newest pre-release while there is no stable one, or the requested one.
+3. Download the archive and `checksums.txt`, and stop when the SHA-256 differs or the list has no entry for the archive.
+4. Run the new binary with `version`, then move it into place: `~/.local/bin/xl` (`%LOCALAPPDATA%\xlang\bin\xl.exe` on Windows, which is added to the user `PATH`).
+5. Run `xl lc install`, which installs the newest compiler and stdlib (below).
 
-## Shell completion
+| Option (`install.sh`) | Environment variable | Meaning |
+|-----------------------|----------------------|---------|
+| `--version <tag>` | `XL_VERSION` | `xl` release to install. Default: the newest. |
+| `--dir <path>` | `XL_INSTALL_DIR` | Install directory. Default: `$HOME/.local/bin`. |
+| `--no-toolchain` | `XL_NO_TOOLCHAIN=1` | Do not run `xl lc install`. |
 
-`xl completions <bash|zsh|fish>` prints a completion script on stdout. It is generated from the CLI's own command tree, so it always matches the installed version: subcommands and their aliases, every flag of each subcommand, the fixed values of options (`--emit`, `--color`, `--safety`, `-O`, ...), the shells for `completions` itself, and file names for the other positional arguments. It registers for both `xlang` and `xl`.
+Pass options through a pipe with `bash -s --`, for example `curl -fsSL <url> | bash -s -- --version v1.0.0-rc.1`. `install.sh` needs `curl`, `tar` and `sha256sum` or `shasum`. `install.ps1` reads `XL_VERSION`, `XL_INSTALL_DIR` and `XL_NO_TOOLCHAIN` the same way.
 
-### Automatic setup: `xl completions install`
+## The toolchain: `xl lc`
 
-Every install method sets completion up without a manual step, on every supported OS and CPU (the scripts do not depend on either; only the startup-file choice differs by OS):
+```bash
+xl lc install                 # the newest compiler and stdlib, made active
+xl lc install v1.0 --std=v1.2 # the newest v1.0.x compiler and v1.2.x stdlib
+xl lc update                  # the newest of both, made active
+xl lc list                    # installed releases, * = active
+xl lc use v1.0.0 --std=v1.2.2 # switch between installed releases
+```
 
-| Method | What it does |
-|--------|--------------|
-| Install script | Runs `xl completions install` after installing. Skip it with `--no-completions` or `XLANG_NO_COMPLETIONS=1`. A failure only prints a note. |
-| `xl self-update` | Runs `xl completions install --refresh` with the new binary: rewrites the scripts that are already installed, never adds or re-adds a startup-file block. |
-| Homebrew | The formula calls `generate_completions_from_executable(bin/"xl", "completions", shells: [:bash, :zsh, :fish])`, so Homebrew installs the scripts itself. |
-| Build from source | Run `xl completions install` once. |
+Compilers and stdlibs are installed per user, never system-wide, several versions side by side:
 
-`install` sets a shell up when it is your login shell (`$SHELL`) or its startup file or config directory already exists, so it does not create files for shells you do not use:
+```
+$XLANG_HOME/xlc/<tag>/xlc          one directory per compiler release (xlc.exe on Windows)
+$XLANG_HOME/std/<tag>/index.xl     one directory per stdlib release
+$XLANG_HOME/toolchain.toml         xlc = "<tag>"  std = "<tag>": the active pair
+```
 
-| Shell | Script | Loaded by |
-|-------|--------|-----------|
-| fish | `$XDG_CONFIG_HOME/fish/completions/xlang.fish` and `xl.fish` (default `~/.config`) | fish autoloads it; no startup edit |
-| zsh | `$XDG_DATA_HOME/xlang/completions/xlang.zsh` (default `~/.local/share`) | a block in `$ZDOTDIR/.zshrc` (default `~/.zshrc`); the script runs `compinit` itself when it has not run yet |
-| bash | `$XDG_DATA_HOME/xlang/completions/xlang.bash` | a block in `~/.bash_profile` (macOS) or `~/.bashrc` (Linux) |
+`$XLANG_HOME` defaults to `~/.xlang` (`%USERPROFILE%\.xlang` on Windows). No root rights are needed.
 
-The block is marked `# >>> xlang completion >>>` ... `# <<< xlang completion <<<`, is added once (running `install` again changes nothing), and only sources the script when the file exists, so deleting the script is harmless. Delete the block to opt out; `self-update` will not add it back. The scripts are regenerated from the installed binary, so open a new terminal after an update to see new commands and flags.
+- Without a tag, the newest stable release is taken, or the newest pre-release while the repository has no stable one. A tag may be partial: `v1` is the newest `v1.x.x`, `v1.2` the newest `v1.2.x`.
+- `install` without `--std` also installs the newest stdlib. A release that is already installed is not downloaded again.
+- Every asset is checked against its release's `checksums.txt` before it is unpacked (`E0792`); a compiler is run once with `--version` before it is moved into place (`E0793`).
+- Release tags are read with `git ls-remote`, so `git` must be on `PATH`; assets are downloaded with the stdlib's HTTPS client.
+- `$XLANG_MIRROR` replaces GitHub with a directory laid out as `<mirror>/<owner>/<repository>/<tag>/<asset>`, for machines without access to GitHub (the tag directories are the release list).
 
-Manual use without the setup: `source <(xl completions bash)`, `source <(xl completions zsh)` or `xl completions fish | source`.
+A project can use another compiler or stdlib than the active pair: `[toolchain]` in `xlang.local.toml`, `$XLC`, `$XLANG_STD` or `--std=<dir>` (see [The build environment](/compiler/cli/#the-build-environment)). That is how the compiler and the stdlib are developed from their checkouts.
 
-## Colored output
+## Updating xl: `xl self-update`
 
-Diagnostics, the error and summary lines, `xl test` and `xl self-update` use ANSI colors when the output is a terminal. `NO_COLOR` (non-empty) turns them off. `--color auto|always|never` overrides both for the run, and it is also passed to the compiler processes that `xl run` and `xl test` start, through the `XLANG_COLOR` environment variable. Colors are never written to `--diag-log` files or to `--diag-format=json`.
+```bash
+xl self-update            # the newest release
+xl self-update v1.0.0     # that release (a partial tag such as v1 works too)
+xl self-update --check    # report only, install nothing
+xl self-update --force    # reinstall or downgrade
+```
+
+The command lists the releases of `hasirciogluhq/xlang` and compares the newest with the running version (`xl version`):
+
+- A stable `xl` takes the newest stable release, or the newest pre-release while there is no stable one. A pre-release `xl` (such as `1.0.0-rc.1`) takes the newest release of any kind, so a release candidate follows the next candidates and then the stable release.
+- When the installed version is the newest or newer, it prints `xl <version> is up to date` and exits with 0.
+- Otherwise it downloads the archive for the host, verifies it against `checksums.txt`, unpacks it next to the running binary, runs it once with `--version` (it must report the release's version, `E0793`) and renames it over the running binary, so an interrupted update leaves the old `xl`. Windows cannot replace a running executable but can rename it, so the old binary is first moved aside as `xl.old.exe`, removed by the next update.
+- A binary under Homebrew's `Cellar` is refused (`E0793`): the package manager owns it.
+- A directory that is not writable fails with the path (`E0793`); a network failure or an unknown tag is `E0791`.
+
+The compiler and the stdlib are updated with `xl lc update`, not by `self-update`.
+
+## Building from source
+
+`xl` is written in xlang. With a compiler and a checkout of the xlang repository (its `xl-std` submodule is the stdlib):
+
+```bash
+git clone --recurse-submodules https://github.com/hasirciogluhq/xlang
+cd xlang/src
+xlc main.xl -M std=../xl-std --import std -DfeatureDefaultAllocator=true '-DxlVersion="1.0.0-dev"' -O2 -o ../xl
+```
+
+Without `-DxlVersion` the binary reports `0.0.0-dev`. The tests are `test/run.sh <xl> <xlc> xl-std` ([Testing](/compiler/testing/#the-xl-tool)).
