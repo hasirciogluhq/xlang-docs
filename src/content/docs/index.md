@@ -16,6 +16,8 @@ Source files use the `.xl` extension. This site is the only documentation source
 
 - Language reference: [Language](/language/)
 - Build and install: [Install](/compiler/install/)
+- The `xl` command (`run`, `build`, `check`, `env`, `pkg`, `lc`, `self-update`): [The xl tool](/compiler/cli/)
+- Dependencies from git repositories, `xlang.local.toml`: [Packages](/compiler/packages/)
 - Running the test suites: [Testing](/compiler/testing/)
 - Examples: [Examples](/examples/)
 - Standard library overview: [Standard library](/std/)

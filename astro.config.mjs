@@ -48,6 +48,7 @@ export default defineConfig({
           label: 'Compiler',
           items: [
             page('compiler/install', 'Install'),
+            page('compiler/cli', 'The xl tool'),
             page('compiler/linking', 'Linking'),
             page('compiler/packages', 'Packages'),
             page('compiler/runtime', 'Runtime'),

@@ -6,18 +6,13 @@ The original plan is implemented except the items below, which are intentionally
 
 ## Platform support
 
-- **Compiler distribution:** prebuilt compilers (install script, `xl self-update`, Homebrew tap) exist for
-  macOS and Linux on arm64/amd64 only. There is no native Windows build of the compiler (it uses POSIX
-  process and file APIs); Windows hosts use WSL. `self-update` and `scripts/install.sh` shell out to `curl`,
-  `tar` and `sha256sum`/`shasum` instead of embedding an HTTP/TLS client and an archive reader; they verify
-  the SHA-256 from the release's `checksums.txt`, which comes from the same GitHub release as the archive
-  (integrity against corruption, not a signature). `self-update` never touches a Homebrew-managed binary.
-  No release exists until the first `v*` tag is pushed. Options: embed a TLS client, sign releases.
-- **Shell completion setup:** `xl completions install` appends its block at the end of `~/.zshrc` and
-  `~/.bash_profile`/`~/.bashrc`. If a user's own `compinit` runs after the end of `.zshrc` (rare), the zsh
-  registration can be reset; move the block above it. bash completion needs no `bash-completion` package
-  (it uses plain `complete -F`). Terminal emulators that start non-login bash on macOS read `~/.bashrc`, not
-  `~/.bash_profile`; the block goes to whichever of the two already exists, else `~/.bash_profile`.
+- **Distribution ([Install](/compiler/install/)):** `xl`, `xlc` and `xl-std` releases exist for Linux and macOS on
+  x86-64 and arm64 and for Windows on x86-64. There is no Windows arm64 release of `xl` or `xlc` (no Windows
+  arm64 entry stub, see Windows below). Releases are verified against the SHA-256 in the release's
+  `checksums.txt`, which comes from the same GitHub release as the archive: integrity against corruption, not a
+  signature. Signed releases are not planned yet. `xl` has no shell completion and no Homebrew formula.
+- **`xl` unpacks archives without file modes:** the `.tar.gz` and `.zip` readers of the stdlib write regular
+  files only; `xl` sets the executable bit on the binaries it installs itself. A package is source and needs none.
 - **macOS threads (D1, option A):** pthread_create from libSystem is the creation primitive now (attribute stack is the top of the caller region, argument block at its bottom). The threads and scheduler e2e programs are being verified; see the e2e result before trusting this line.
   (MIG message), or keep the single-thread mode.
 - **Windows:** `std/sys/windows.xl` imports ntdll `Nt*`, bcrypt (RNG) and `GetStdHandle`, and `std/sys/sock.xl`
@@ -185,21 +180,18 @@ such a chain of `export *` re-exports has been reported as not visible through `
   integer type, a count >= the bit width gives 0 (`>>` of a negative signed value gives -1), `>>` on signed
   types is arithmetic. In `define`/global constants `~x` is the untyped `-x - 1`; cast the result.
 - `HIR` does not fold constant expressions (`N * 2` is constant in global initializers but folded later).
-- Module resolution: `std`/`std/x` come from the stdlib root; other paths from the importing file's
-  directory, then the root file's directory; a path under a dependency's repository path comes from that
-  installed package (see [Packages](/compiler/packages/)). `import "x"` without alias binds the last path segment.
-  There are no other search-path strategies.
-- The default stdlib is embedded in the compiler (generated `build/gen/std_blob.cpp`, rebuilt when
-  `std/**/*.xl` changes); `--std=<dir>`, `--std=host/user/repo[@tag]` and `[std]` in `xlang.toml` replace it.
-  The compiler never searches the file system for it.
+- Module resolution: `NAME` and `NAME/x` come from the module root `-M NAME=DIR` (the stdlib is the root `std`,
+  each package one more root); other paths from the importing file's directory, then the root file's directory.
+  `import "x"` without alias binds the last path segment. There are no other search-path strategies; the
+  compiler has no stdlib of its own and never searches the file system for one.
 
-## Packages (`xl install`, `xlang.toml`, `xlang.lock`)
+## Packages (`xl pkg`, `xlang.toml`, `xlang.lock`)
 
 Decisions taken when the package system was added ([Packages](/compiler/packages/) is the reference):
 
 - **Git is the registry.** Packages are tags of git repositories, fetched by running the `git` executable
   (`ls-remote`, `clone --depth 1`); no HTTP client, no hosting API, no search, no publish command. Builds
-  never fetch: `xl install` is the only command that uses the network. Go-style auto-download
+  never fetch: `xl pkg` is the only command that downloads packages. Go-style auto-download
   on build was rejected to keep builds offline and deterministic.
 - **Integrity is the commit hash** recorded in `xlang.lock` (tag moved or cache edited = error). There are no
   content checksums or signatures; a compromised host or a force-pushed first download is not detected.
@@ -214,21 +206,19 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
 - **Only exact tags, no branches or commits.** `version = "main"` or a commit hash is `E0742`; there is no way
   to track a branch except a `path` dependency on a checkout.
 - **Dependencies of dependencies:** read from the package's `xlang.toml` (a package without one has none) and
-  resolved transitively with exact tags only. A package's `[std]` is ignored; a stdlib package's own
-  dependencies are not resolved. There is no `dev-dependencies` or optional-dependency notion.
-- **`[[native]]` files are committed to the repository** and linked into executables and shared libraries
-  only; `--emit=static|obj` do not include them. No download step, build step, or `url` form, and the compiler
-  never runs a command from a package. Entries are chosen by `os` and `arch` only (no ABI/libc flavor, which
-  is not a concept in xlang). A native file must be built `--no-std` if it is an xlang library (it would
-  carry a second copy of the stdlib). Native inputs of dependencies that the program does not import are
-  still linked.
+  resolved transitively with exact tags only. There is no `dev-dependencies` or optional-dependency notion.
+  A `path` dependency's own `path` dependencies resolve relative to it, but `xlang.local.toml` is read only in
+  the project root.
+- **Packages are source only.** A package cannot ship prebuilt objects for `xl` to link (the former
+  `[[native]]` table is not read); a program names such files on the `xl build` command line
+  ([Linking](/compiler/linking/)). A project cannot pin a stdlib in `xlang.toml`: the stdlib is the toolchain's,
+  or one developer's choice in `xlang.local.toml`.
 - **No per-package compiler-version requirement** (`xlang = ">=0.x"` is not implemented), no `build.xl`
   hooks, no feature flags for packages, no `-D` forwarding to packages.
 - **Package identity is the repository path.** A repository that moves hosts needs a `source` override or a
   rename of the import paths. Git `submodules` are not fetched. LFS files are not fetched.
 - **Cache is per project** (`<root>/.xlang/cache`), not shared between projects, and old versions are never
-  pruned automatically (`xl clean` deletes all).
-- **POSIX hosts only** (fork/exec, `file://` URLs); the compiler has no native Windows build either.
+  pruned automatically (`xl pkg clean` deletes all).
 - **`install` can leave downloaded sources in the cache** when a later package of the same run fails; the
   manifest and lock are untouched in that case.
 - Package modules are keyed by their import path, which contains dots (`github.com/u/r`); mangled symbol
@@ -283,13 +273,14 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
   compiled, so separately compiled modules (`only_module`) are not unwound through; a function with `defer`, drops or
   `try` keeps every local in memory and is never inlined; a panic with no `try` runs no cleanup. Verified on macOS
   arm64 and Linux arm64/x86-64; `try` is an error on Windows (register snapshot not written). A cleanup that itself
-  panics while unwinding is not handled. `xl test` still ends the file's run on a `panic`; it does not use `try` yet.
+  panics while unwinding is not handled. `std/testing` still ends the file's run on a `panic`; it does not use `try` yet.
   The compiler hooks this adds (`unwind` role, `__builtin_unwindPads`, `__builtin_unwindPadCount`, the `try` snapshot asm)
   are the only compiler knowledge of unwinding; the walker, registry and message copy are stdlib.
 - **A failed expectation does not stop the test** (no unwinding); a `panic` ends the whole file's run, which
-  `xl test` reports as that file failing.
-- **`xl test` runs files sequentially** (no `--jobs`) and has no per-test name filter; granularity is the
-  file. Windows is not supported by the runner (POSIX `fork`).
+  the runner reports as that file failing.
+- **There is no `xl test`:** a test file is a program (`xl run x.test.xl`), and `xl-std/test/unit/run.sh` runs
+  the stdlib's suites one file at a time. Discovery, parallel runs and a per-test filter belong to a future
+  `xl test` command.
 
 ## Std cryptography (`std/crypto`)
 
@@ -350,6 +341,13 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
 
 ## Tooling
 
+- **Language gaps met while writing `xl` in xlang** (each has a workaround in `src/`; none is decided yet):
+  a generic method inside a generic class body is `E0706` (written in an `impl<T> Type<T>` block instead);
+  `?` is rejected on the right of `&&`/`||`, in a loop condition, in a ternary branch and in `defer` (`E0761`);
+  there are no octal literals (file modes are written in decimal, `493` for `0755`); `switch` needs a subject,
+  so an `if` chain stands for a subject-less switch; a `define` cannot hold an array of `str`; `&f()` of a
+  temporary is `E0709` (bound to a `local` first); `for x in [&a, &b]` yields `**T`, which method calls do not
+  dereference; `Vec<T>` has no `clone`; `JsonWriter.valueString` takes `str`, not `*String`.
 - Debug info has compile unit, subprograms, line locations and basic types; no struct/class types.
 - `--incremental` caches per-module objects only; semantic analysis still runs for every module (no
   interface files). A MIR layer (plan 8.3) was not needed.
