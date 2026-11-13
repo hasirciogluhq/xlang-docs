@@ -10,9 +10,9 @@ The compiler owns the language, types, layout, CPU primitives and compile-time f
 
 | Role | Signature | Called by |
 |---|---|---|
-| `panic` | `fn(msg: *u8)`, no return | every compiler failure path: an explicit `panic`, division by zero, a failed array bound, a format mismatch |
+| `panic` | `fn(msg: *u8) -> never` | every compiler failure path: an explicit `panic`, division by zero, a failed array bound, a format mismatch |
 | `alloc` | `fn(size: usize, align: usize) -> *void` | `new T` |
-| `free` | `fn(p: *void)`, no return | `delete p` |
+| `free` | `fn(p: *void)` | `delete p` |
 | `unwind` | `fn(i32, *usize, *u8)` | the landing pads of `try` |
 
 A declaration that does not fit its role is `E0503`; `register(start)` is an unknown role, also `E0503`.
@@ -31,7 +31,7 @@ Using a feature whose role is unregistered is `E0501`: `new T` without `alloc`, 
 panic("something went wrong\n")
 ```
 
-The stdlib `panic` writes the message to stderr and exits the process with status 134. A program that registers its own `panic` replaces this. `panic` never returns, so it may be used anywhere a value is expected.
+The stdlib `panic` writes the message to stderr and exits the process with status 134. A program that registers its own `panic` replaces this. `panic` is `-> never`: its body must end every path with an endless loop or another `-> never` call (such as the process exit), and a path that calls it needs no `return` after it.
 
 ## Unwinding and `try`
 

@@ -65,7 +65,7 @@ declare fn helper(x: i32) -> i32
 
 ## Reachability pruning
 
-Before code generation the compiler removes every function and global that no root reaches (`src/hir/prune.cpp`). The roots are `@entry`, every `@init` and `@fini` function, every `register(role)` function, the hooks codegen calls by name (`panic`, `alloc`, `free`, `unwind`), every vtable and interface method, the C functions LLVM may call implicitly (`memcpy`, `memmove`, `memset`, `memcmp`, `bcmp`, `bzero`), and, for libraries and objects, every `export` and `export(c)` symbol. Everything else is kept only if reachable from a root through calls, function values, constructors, globals and cleanup bodies. The `@library` imports of the removed functions are never linked. The stdlib panic path writes through `sysWriteFile`, which does not reach the Windows socket code, so a program that does not use sockets does not import `ws2_32`.
+Before code generation the compiler removes every function and global that no root reaches (`src/hir/prune.cpp`). The roots are `@entry`, every `@init` and `@fini` function, every `register(role)` function, the hooks codegen calls by name (`panic`, `alloc`, `free`, `unwind`), every vtable and interface method, the C functions LLVM may call implicitly (`memcpy`, `memmove`, `memset`, `memcmp`, `bcmp`, `bzero`), and, for libraries and objects, every `export` and `export(c)` symbol. An executable linked with prebuilt objects or libraries (`xlc main.xl peer.o`) keeps every `export(c)` function as well, since that code may call back into it. Everything else is kept only if reachable from a root through calls, function values, constructors, globals and cleanup bodies. The `@library` imports of the removed functions are never linked. The stdlib panic path writes through `sysWriteFile`, which does not reach the Windows socket code, so a program that does not use sockets does not import `ws2_32`.
 
 ---
 
@@ -74,7 +74,7 @@ Before code generation the compiler removes every function and global that no ro
 - `--emit=static` archives the program's objects in-process (no `ar`).
 - `--emit=shared` links a shared library (`-shared`, `-dylib` or `/dll`); no entry stub is added.
 - `--emit=header` writes a C header for `export`ed items.
-- `export(c)` keeps a symbol name unmangled so C code can link to it; aggregates are passed through pointers, not the target C ABI (see [Known limitations](/known-limitations/)).
+- `export(c)` keeps a symbol name unmangled so C code can link to it, and it uses the target's C calling convention, so the header's by-value structs match the code: System V AMD64 ([psABI 3.2.3](https://gitlab.com/x86-psABIs/x86-64-ABI)) on Linux and macOS x86-64, [AAPCS64](https://github.com/ARM-software/abi-aa/blob/main/aapcs64/aapcs64.rst) on arm64, and the [Microsoft x64 convention](https://learn.microsoft.com/en-us/cpp/build/x64-calling-convention) on Windows x86-64. `declare` imports use the same convention.
 
 ---
 

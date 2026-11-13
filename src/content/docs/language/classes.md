@@ -50,14 +50,15 @@ class Dog : Animal {
 
 ## Drop and moves
 
-A class *needs drop* when it has a `drop` method, or a field or base class that needs drop. Such values are move-only.
+A class *needs drop* when it has a `drop` method, or a field or base class that needs drop. A tuple needs drop when one of its elements does. Such values are move-only.
 
 - A local or by-value parameter that needs drop is dropped when its block ends or the function returns, last-in first-out, together with `defer`.
-- The drop runs the user `drop` body, then the drop of each field that needs drop in reverse declaration order, then the base class drop.
-- Moving a droppable local by value (a `local` initializer, the right side of an assignment, a by-value argument, a `return` value) is a move, and its drop is cancelled. A temporary passes its ownership on.
+- The drop runs the user `drop` body, then the drop of each field that needs drop in reverse declaration order, then the base class drop. A tuple drops its elements in reverse order.
+- Moving a droppable local by value (a `local` initializer, the right side of an assignment, a by-value argument, a tuple element, a `return` value) is a move, and its drop is cancelled. A temporary passes its ownership on.
 - Moving a field, an element or `*p` by value is `E0720`; take its address instead.
-- A class that needs drop cannot be a struct field or a global (`E0721`); use a class field or a `*T` made with `new`. An array whose element type needs drop is also `E0721`, because arrays do not drop their elements. A droppable element belongs in a `Vec<T>`, which drops its elements when it is dropped.
-- Drops are statically dispatched: deleting a derived object through a base pointer runs only the base drop.
+- A class or tuple that needs drop cannot be a struct field or a global (`E0721`); use a class field or a `*T` made with `new`. An array whose element type needs drop is also `E0721`, because arrays do not drop their elements. A droppable element belongs in a `Vec<T>`, which drops its elements when it is dropped.
+- A class with a vptr drops through it: slot 0 of every vtable holds the drop of the class itself (a C++ virtual destructor), so `delete p` and `__builtin_drop(p)` through a base pointer run the drop of the real class. An `@repr(c)` hierarchy mirrors the C++ vtable and has no such slot.
+- A class without a vptr drops statically. Dropping through a base pointer when some derived class has its own drop would skip that drop, so it is `E0766`: add a `virtual` method to the base, or drop through the derived type.
 - `__builtin_read(p)` and `__builtin_write(p, v)` are the raw move and store through a pointer, with no move and no drop. They are what a container needs for its slots, and they are unchecked, like `*p`.
 
 ## Allocation

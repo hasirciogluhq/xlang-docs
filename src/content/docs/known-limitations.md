@@ -43,9 +43,7 @@ The original plan is implemented except the items below, which are intentionally
 
 ## ABI and interop
 
-- **`export(c)` and aggregates by value:** structs are passed/returned through pointers (the xl convention),
-  not through the target C ABI (SysV/AAPCS register passing). Only pointers, scalars and `@repr(c)`
-  structs behind pointers are safe across the boundary.
+- **C convention through pointers:** a `fn(...)` value and a virtual method of an `@repr(c)` class use the xlang convention, so a struct by value through either does not match C or C++ (a C function that passes one cannot be a value, `E0778`).
 - **Itanium typeinfo:** the vtable of an `@repr(c)` class has a `null` typeinfo slot; no `_ZTI...` symbol.
 
 ## Language/stdlib
@@ -89,13 +87,13 @@ The original plan is implemented except the items below, which are intentionally
 - **Static libraries and objects own no entry:** `--emit=static` and `--emit=obj` export weak `_xl_initAll` and `_xl_finiAll` that run only the `@init` and `@fini` functions of that build. A linking executable keeps its own strong `_xl_initAll`, which runs the init functions of the program it was compiled as, so a prebuilt archive's init functions run only when the host calls that archive's `_xl_initAll` itself. Open decision: one init table per archive, or generated per-object init sections.
 - **Shared libraries on Windows (not implemented yet):** `--emit=shared` builds a DLL with neither hook, so its `@init` functions do not run on load, its `@fini` functions do not run on unload, and its `@entry` never runs by itself; the host must call `_xl_initAll` and `_xl_finiAll`. The decided design is a `DllMain` (DLL_PROCESS_ATTACH runs `_xl_initAll` and then `@entry`; DLL_PROCESS_DETACH runs `_xl_finiAll`), with the module handle from an `xl-std/sys` helper; it is not written yet.
 - **Entry arguments in shared libraries:** the `@entry` argument form (`argc: i32`, `argv: **u8`) is refused in a shared library (`E0755`); a library has no command line. On Windows it needs the `args` role, which the stdlib provides.
-- **Moving a payload out of a `switch` is whole-value only:** moving one binding out consumes the switched-on local, so another droppable value of the same variant (`case E.Pair(a, b)`, moving `a`) is not dropped. A switch on a place (`switch *r`) cannot move its payload out (`E0720`), so `resultTake`/`resultTakeErr` (which read through a pointer) work only for a payload that needs no drop; take the `Result` by value (`resultOrElse`, `?`, or a `switch` on an owned local).
+- **`resultTake`/`resultTakeErr` need a plain payload:** they switch through a pointer, which only lends the payload (`E0720` on a move), so a droppable payload must be taken by value (`resultOrElse`, `?`, or a `switch` on an owned value).
 - **`F` is not inferred from an untyped closure:** `apply(x, |v| v * 2)` with `fn apply<F>(..., f: F)` is `E0724`/`E0404`, because the closure's parameter types come from the parameter it is passed to, which is `F` itself. Write the parameter types: `|v: i32| v * 2`.
 - **Tar extraction ignores modes, times and links:** `std/io/files` has `chmod`, `setTimes` and `symlink`, but the extractor does not call them yet (see [Archives](/std/archive/)).
 - **Windows links and permissions:** there are no POSIX permission bits (only the read-only attribute is mapped), a symbolic link's file/directory kind is fixed when it is created, and creating one needs Developer Mode or the `SeCreateSymbolicLinkPrivilege` privilege (the unprivileged flag is passed, which works only with Developer Mode). `readLink` reads symbolic links only, not junctions.
 - **macOS unload hook does not run:** `_xl_finiAll` sits in `__DATA,__mod_term_func`, which dyld runs when an image is unloaded. A process exit does not unload a dylib, and `dlclose` is not called by the compiler or the stdlib, so `@fini` of a shared library does not run on macOS unless the host unloads it. This path is not verified at runtime.
 - **Linux runtime of the entry stub and the shared hooks is checked only through Docker:** the Linux `_start` stub and the `.init_array`/`.fini_array` hooks are emitted and cross-built here, but they run only in the Docker e2e legs. The shared-library load test (`shared_hook`) runs on macOS only, through `DYLD_INSERT_LIBRARIES`.
-- Tuples: `(A, B, ...)` is a product type, laid out in order like `@repr(c)`, and a function may return one. A tuple is taken apart with `local (a, b) = f()` or read element by element with `.0`, `.1`, .... A tuple is copied by value and needs no drop, so a tuple holding a value that needs drop (a class with a `drop` method) is not supported: the drop glue for a tuple is not generated. Nested destructuring (`local (a, (b, c)) = f()`) and destructuring in a `for` header are not implemented. A tuple element of a temporary tuple is not a place for `&` (see the address-of rule).
+- Tuples: `(A, B, ...)` is a product type, laid out in order like `@repr(c)`, and a function may return one. A tuple is taken apart with `local (a, b) = f()` or read element by element with `.0`, `.1`, .... Nested destructuring (`local (a, (b, c)) = f()`) and destructuring in a `for` header are not implemented. A tuple element of a temporary tuple is not a place for `&` (see the address-of rule).
 - Payload enums (sum types): the parser turns `enum E { A(T), B }` into ordinary items: the struct `E` (`tag`, `data`), the
   value enum `E$Tag`, the union struct `E$Data` and one struct `E$A` per variant with data. The union is not a language
   feature: only the compiler-made `E$Data` has `is_union` (all fields at offset 0), there is no `union` keyword. The
@@ -172,9 +170,7 @@ such a chain of `export *` re-exports has been reported as not visible through `
   `@repr(c)` two-word struct). A `str` view does not keep its bytes alive: the caller must. Writing through the `*u8` of a
   literal is undefined behavior (its bytes are in read-only data); `[u8; N]` is the writable form. `std/http` and the TLS
   modules still pass `*u8` pointer and length pairs; their equality function is named `cstrEq` to avoid the name `eq` of `std/str`.
-- `W0701`: a function with a return type can reach its end without `return`. The analysis is syntactic: every
-  path must end in `return`, an infinite `while true` without `break`, `__builtin_asm(..., options("noreturn"))` or
-  a call to the registered `panic`. Other `noreturn` callees are not recognized (a warning, not an error).
+- **The missing-return check (`E0764`) is syntactic:** a path ends only at `return`, a `while true` without `break`, a `-> never` call or a `switch` that covers every variant, so a loop whose condition is always true in another form still needs a `return` after it.
 - Bit operators `& | ^ ~ << >>` exist with Go-style precedence (`& << >>` bind like `*`, `| ^` like `+`,
   so `a & b == c` is `(a & b) == c`). Shifts: the result has the left operand's type, the count may be any
   integer type, a count >= the bit width gives 0 (`>>` of a negative signed value gives -1), `>>` on signed
@@ -444,7 +440,6 @@ Decisions taken when the package system was added ([Packages](/compiler/packages
 - **Environment sources:** on Linux `env.list()` reads `/proc/self/environ`, which is the environment at exec time, so `setenv`-style changes by foreign code are not seen. On Windows the block from `GetEnvironmentStringsW` is not re-sorted when `Command.env` adds entries.
 - **`stdin()` is not thread-safe:** the shared `Stream` and its buffer have no lock.
 - **The native e2e runner is unix-only:** `runner.xl` runs on Linux and macOS; Windows is covered by `run.sh` under CrossOver and by the CI job that builds and runs `process.xl`. The runner has no per-test timeout.
-- **A `switch` on a temporary payload enum leaks it:** `switch f() { ... }` holds the value in a hidden local that is never dropped unless a binding moves the payload out. Switch on a local (`local r = f()` then `switch r`).
 - **`new C(args)` regression in `xlc`:** `new Stream(fd, owned)` fails with "unknown function C.init", so `std/io/stream` places its `stdin()` object in static storage with `__builtin_write`. Remove the workaround when the compiler is fixed.
 - **Fiber scheduler is not built:** `sysMapGuarded` gives the guard page; the fiber scheduler on top of it is open.
 - **Address-configuration clients are pure state machines:** `DhcpClient`, `Dhcp6Client` and `SlaacClient` do no I/O and read no clock (see docs/std/protocols.md). No ARP probe after a DHCPv4 ACK (`decline` is there for the caller), DHCPv6 handles one IA_NA (no IA_TA, prefix delegation, rapid commit or reconfigure), SLAAC uses the first prefix of an RA, one RDNSS address, no privacy addresses (RFC 8981) and no stable-privacy identifiers (RFC 7217).
