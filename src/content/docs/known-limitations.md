@@ -111,11 +111,7 @@ The original plan is implemented except the items below, which are intentionally
 - **Std sum types (`std/collections/option`, `std/collections/result`):** `Option<T>` and `Result<T, E>` are ordinary
 generic payload enums plus a few helpers (`optionOrElse`, `optionIsSome`, `optionTake`, `resultOrElse`, `resultIsOk`,
 `resultTake`, `resultTakeErr`). Early exit is `e?` (see the language reference); `?` has no error conversion, so the
-failure type must be the same in the callee and the caller. Known gap: `Option`/`Result` are re-exported through
-`std/collections/index.xl` and `std/index.xl` with `export *`, and a generic type that reaches a program only through
-such a chain of `export *` re-exports has been reported as not visible through `import "std"` while a direct import
-(`from "std/collections/result" import Result`) and a namespace import (`import "std/collections" as C`,
-`C.Result<i32, i32>`) work. No cause is confirmed yet.
+failure type must be the same in the callee and the caller.
 - `Vec<T>` (`std/collections/vec`): the element accessors `get`, `first` and `last` return `*T` rather than a value, so a droppable element is never copied. The index panic text (`Vec: index I out of range for length L`) is built by `fmtIndexPanic` in `std/str/fmt`, on the stack and without allocating. `set` drops the old element through a plain `*slot = v` assignment. A drop-counter element type in `test/e2e/collections.xl` checks that `set`, `insert`, `remove`, `swapRemove` and `truncate` drop each element exactly once.
 - `String` (core-language phase 7): the HTTP and TLS modules still use `*u8` buffers. `fsReadAllString` is in `std/io/fs`.
 - `const` (core-language phase 2): a `const` is not a `define` constant, so it cannot be an array length, a `staticAssert`

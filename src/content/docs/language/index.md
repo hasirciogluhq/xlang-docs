@@ -389,6 +389,7 @@ export { sysClockSeconds, sysRandom } from "sys"
 
 - Modules may import each other. Every module of the program loads before any import or export is resolved, so a cycle is legal. A name that reaches an importer only through an `export *` loop, and that no module in the loop exports, is `E0711`.
 - Only `export`ed declarations are visible to importers.
+- A namespace import binds one name (`import "std"` binds `std`); its members are written `std.print(...)`, `std.Result<i32, Error>`, `std.Result.Ok(v)` and, for a class, `std.String()` or `std.Vec<i32>()`. `--import std` loads a module without binding any name.
 - Two exports or imports of the same name are an error; the same entity reaching a module by two paths is warning `W0401`.
 - `import "std"` gives the whole standard library. The compiler has no stdlib of its own: it is a module root like any package (`xlc -M std=<dir> --import std`), and `xl` passes the installed one (or the one `xlang.local.toml`, `$XLANG_STD` or `--std=<dir>` names); see [The xl tool](/compiler/cli/#the-build-environment).
 - An import of `NAME` or `NAME/sub` resolves inside the directory of the module root `-M NAME=DIR`; `xl` adds one root per package. Other paths are relative to the importing file.
