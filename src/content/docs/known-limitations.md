@@ -83,7 +83,7 @@ Each entry is one intentional gap or one open decision. Everything not listed he
 - **No test discovery:** a test file registers its tests with `test(&s, "name", fn)` and returns `suiteRun`.
 - **No chained matchers:** the matchers are typed functions (`expectEq`, `expectEqStr`, `expectNear`, ...).
 - **A panic ends the file's run:** `std/testing` does not use `try` yet.
-- **No `xl test`:** a test file is a program, and discovery, parallel runs and filters are not implemented.
+- **`xl test` has no per-file timeout and no regular-expression patterns:** the stdlib has no timed wait for a child process and no regular expressions; patterns are files, directories, globs and substrings. A glob has no `[...]` class (`globMatch` has none), and a directory with more than 4096 entries is searched only in part (`fsListDir` reads into a fixed buffer).
 - **The native e2e runner is unix-only:** Windows is covered by `run.sh` under CrossOver and by the CI job that runs `process.xl`, and the runner has no per-test timeout.
 
 ## Stdlib text, data formats and files

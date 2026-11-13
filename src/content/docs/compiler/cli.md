@@ -2,12 +2,13 @@
 title: The xl tool
 ---
 
-`xl` is the one command a user runs. It installs the compiler and the standard library (`xl lc`), manages packages (`xl pkg`), builds and runs programs through the compiler `xlc` (`xl check`, `xl build`, `xl run`), reports what a build would use (`xl env`) and updates itself (`xl self-update`). `xl` is written in xlang; its sources are `src/` of the xlang repository.
+`xl` is the one command a user runs. It installs the compiler and the standard library (`xl lc`), manages packages (`xl pkg`), builds and runs programs through the compiler `xlc` (`xl check`, `xl build`, `xl run`), runs test files (`xl test`), reports what a build would use (`xl env`) and updates itself (`xl self-update`). `xl` is written in xlang; its sources are `src/` of the xlang repository.
 
 ```
 xl run [flags] [file.xl] [args...]   build and run a program; arguments after the file go to it
 xl build [flags] [file.xl]           build an executable (or what --emit asks for)
 xl check [flags] [file.xl]           type-check without writing anything
+xl test [flags] [patterns...]        build and run the *.test.xl files, several at a time
 xl env [--json] [file.xl]            the compiler, stdlib and module roots a build of the file uses
 xl pkg <command>                     packages: add, install, update, remove, list, clean
 xl lc <command>                      the compiler toolchain: install, update, list, use
@@ -38,6 +39,48 @@ Every build hands the compiler its environment, then the caller's flags:
 xlc <file> <objects and libraries> -M std=<stdlib> --import std -DfeatureDefaultAllocator=true \
     -M <repository>=<dir> ...  <[build] flags of xlang.local.toml>  <your flags>
 ```
+
+## Testing: `xl test`
+
+```bash
+xl test                              # every *.test.xl under the current directory
+xl test net/ json                    # the files under net/, and the files whose path contains "json"
+xl test 'crypto/**/*.test.xl' -x rsa # a glob, without the files that contain "rsa"
+xl test -q -j 4 --fail-fast          # 4 at a time, output of failures only, stop at the first failure
+xl test --list 'tls*'                # print the selection; a glob without / matches a name at any depth
+xl test -O2 --safety=checked         # compiler flags apply to every file
+```
+
+A test file is a program named `*.test.xl` whose exit status says whether it passed; [`std/testing`](/compiler/testing/) gives it a suite and a report. `xl test` builds each selected file with the same environment as `xl build` (the project's stdlib, packages and `xlang.local.toml`), runs it, and prints one result line per file, in file order:
+
+```
+ PASS  a.test.xl (338 ms)
+ FAIL  net/broken.test.xl (build failed)
+ FAIL  net/fail.test.xl (exit 1)
+
+Tests  2 failed, 3 passed (5 files, 8 at a time)
+Time   812 ms
+  x net/broken.test.xl
+  x net/fail.test.xl
+```
+
+- **Patterns.** A file selects itself. A directory selects every test file under it. A glob (any pattern with `*` or `?`) is matched against the path from the current directory: `*` and `?` stay inside one path segment and `**` spans any number of segments; a glob without `/` matches a name at any depth (`'ok*'` selects `net/http/ok.test.xl`), a glob that matches a directory selects the test files under it, and a glob ending in `.xl` also selects files that are not named `*.test.xl`. Anything else selects the test files whose path contains it. Several patterns add up; a pattern that selects nothing is `E0711`. Without a pattern every test file under the current directory runs. Directories named `build` or `node_modules`, or starting with `.`, are not searched.
+- **Output.** Each file builds and runs in its own temporary directory, with stdin the null device. The compiler's diagnostics and the program's output go to a log that is printed under the file's result line, so parallel runs never interleave. A failure line says why: `build failed`, `exit N`, `killed by signal N`.
+- **Colors** are on when stdout is a terminal and `NO_COLOR` is not set; the test programs are then built with the compiler's `--color=always`, and otherwise with `-DxlTestNoColor`, which turns off the colors of `std/testing`.
+- **Exit status** is 0 when every selected file built and passed, 1 otherwise (also when `--fail-fast` skipped files).
+
+| Flag | Meaning |
+|------|---------|
+| `-x`, `--exclude <pattern>` | drop the files the pattern selects; repeatable, same forms as a pattern |
+| `-j`, `--jobs <n>` | build and run `n` files at once (default: one per CPU) |
+| `-q`, `--quiet` | print a file's output only when it fails |
+| `--fail-fast` | after the first failure, end the files still building or running and start no more |
+| `--list` | print the selected files, one per line, and run nothing |
+| `--no-color` | plain output |
+| `--std=<dir>` | replace the stdlib, as for `xl build` |
+| `-- <args...>` | pass the arguments to every test program |
+
+Every other flag goes to the compiler for each file (`-O2`, `-D NAME=VALUE`, `--safety=checked`, `--target`, ...). `-o`, `--output`, `--emit` and `--check` are `E0740`, because `xl test` chooses each file's executable itself. Values take the forms `-j 4`, `-j4`, `--jobs 4` and `--jobs=4`.
 
 ## The build environment
 
