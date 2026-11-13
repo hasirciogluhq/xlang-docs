@@ -10,6 +10,10 @@ A `class` holds fields and methods, may derive from one base class, and carries 
 class Animal {
     legs: i32
 
+    fn init(self) {
+        self.legs = 4
+    }
+
     fn init(self, legs: i32) {
         self.legs = legs
     }
@@ -23,7 +27,7 @@ class Dog : Animal {
     tail: i32
 
     fn init(self, tail: i32) {
-        Animal.init(self, 4)          // the base `init` with no arguments runs first
+        // `Animal.init(self)`, the base `init` with no arguments, has already run here
         self.tail = tail
     }
 
