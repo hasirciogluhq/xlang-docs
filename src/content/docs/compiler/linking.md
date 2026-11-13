@@ -13,7 +13,7 @@ This document describes how the compiler turns a program into an executable, sha
                                                               \-> in-process archiver -> static library
 ```
 
-`xlc file.xl` runs the whole pipeline (`xl build file.xl` runs it with the project's stdlib and packages, see [The xl tool](/compiler/cli/)). `--emit` selects where it stops or what it produces: `exe` (default), `obj`, `ir`, `bc`, `header`, `static` (archive), `shared`. `xl run file.xl` builds into a temporary executable and runs it.
+`xlc file.xl` runs the whole pipeline (`xl build file.xl` runs it with the project's stdlib and packages, see [The xl tool](/compiler/cli/)). `--emit` selects where it stops or what it produces: `exe` (default), `obj`, `ir`, `bc`, `header`, `static` (archive), `shared`. `-o -` writes `obj`, `ir`, `bc` and `header` to stdout. `xl run file.xl` builds into a temporary executable and runs it.
 
 ---
 

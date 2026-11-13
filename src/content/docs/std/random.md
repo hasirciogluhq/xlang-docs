@@ -44,6 +44,4 @@ Time is always the caller's: `std/sys` gives seconds only.
 - `PushIdGen.next(unixMillis) -> String`: 20 characters, Firebase push ID, monotonic within one millisecond.
 - Typed random values: `randomU32`, `randomI64`, `randomF64` (53 bits, in [0, 1)), `randomBelowU64(bound)` (no modulo bias).
 
-Section headings in the catalogue (std.plan.md section 8b) list every other generator, UUID version and ID family that is still planned.
-
 Verified against known vectors: MD5 of the empty string, SHA-1 of "abc", UUID v3 and v5 of `www.example.com` in the DNS namespace.
