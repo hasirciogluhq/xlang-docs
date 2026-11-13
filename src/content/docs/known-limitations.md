@@ -9,8 +9,8 @@ Each entry is one intentional gap or one open decision. Everything not listed he
 - **No Windows arm64:** there is no Windows arm64 entry stub, so there is no Windows arm64 release of `xl` or `xlc`.
 - **Unsigned releases:** a release is checked against the SHA-256 in its own `checksums.txt`, which detects corruption but not a compromised host.
 - **No shell integration:** `xl` has no shell completion and no Homebrew formula.
-- **Windows is verified under Wine only:** the Windows e2e programs run under CrossOver/Wine, never on real Windows, and `sched`, `threads` and `panics` are not run there.
-- **No Windows threads:** `NtCreateThreadEx` and a `WaitOnAddress` wait are not written, so `std/thread` does not run on Windows.
+- **Windows is verified under Wine only:** the Windows e2e programs run under CrossOver/Wine, never on real Windows, and `threads` and `panics` are not run there.
+- **Windows threads are unverified:** `std/thread` on Windows (`CreateThread`, `WaitOnAddress`) is cross-built only and has not run under Wine or on Windows yet.
 - **Windows paths are Latin-1:** the file API widens a path byte by byte; only `fsListDir` converts UTF-8 to UTF-16.
 - **A Windows fd is a truncated handle:** it is the low 32 bits of the handle, and a socket fd carries bit 30.
 - **Windows links and permissions:** only the read-only attribute is mapped, a symbolic link's file or directory kind is fixed when it is created, creating one needs Developer Mode, and `readLink` does not read junctions.
@@ -74,8 +74,6 @@ Each entry is one intentional gap or one open decision. Everything not listed he
 ## Runtime and memory
 
 - **Allocator replacement is not tracked per block:** after `currentAllocator = v`, a block allocated before is freed through `v`, and a user `alloc` without a user `free` frees through the stdlib `free`.
-- **`std/thread/sched` is not redirected:** it allocates from `Heap` and `sysMap` directly.
-- **No fiber scheduler:** `sysMapGuarded` gives the guard page, and the scheduler on top of it is not written.
 - **`stdin()` is not thread-safe:** the shared `Stream` and its buffer have no lock.
 
 ## Testing

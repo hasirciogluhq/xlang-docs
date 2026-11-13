@@ -360,7 +360,7 @@ The stdlib registers `alloc` and `free` functions when the `default-allocator` f
 
 Registrations of the same role override by group: the stdlib (the default) is replaced by a user registration of the same role, a user registration is never replaced by the stdlib, and two registrations of one role in the same group are `E0502`. A user `alloc` must be paired with a user `free`, because the stdlib `free` forwards to `currentAllocator`; the compiler does not check the pairing.
 
-`String` and `Vec<T>` allocate through `currentAllocator`, not through the registered `alloc`. The stdlib runtime (`std/thread/sched`) uses its `Heap` and `sysMap` directly and is not redirected.
+`String` and `Vec<T>` allocate through `currentAllocator`, not through the registered `alloc`.
 
 ---
 
@@ -484,11 +484,11 @@ All of it is in `std/`; `import "std"` or `from "std" import name` brings it in,
 | `std/auth` | JWS, JWT, OAuth and AWS SigV4 |
 | `std/cloud` | an S3 client |
 | `std/semver` | semantic version parsing and comparison |
-| `std/thread` | threads, `Mutex`/`Cond`/`RwLock`/`Once`, and the cooperative scheduler (`spawn`, `waitAll`, `yield`) |
+| `std/thread` | threads and `Mutex`/`Cond`/`RwLock`/`Once` |
 | `std/os` | process control |
 | `std/cpu`, `std/gpu`, `std/hw` | CPU feature flags, GPU device discovery, and hardware facts from the OS |
 | `std/sys` | the native OS layer: `env`, per-OS raw calls (`linux`, `macos`, `windows`), `sock` and `uring`. Not for user code; reach it through the areas above |
-| `std/runtime` | `panic` (the registered `panic`), `unwind` (panic unwinding and the registered `unwind`, what `try`/`catch` run on) and `context` (stack switching for the scheduler) |
+| `std/runtime` | `panic` (the registered `panic`), `unwind` (panic unwinding and the registered `unwind`, what `try`/`catch` run on) and `args` (the entry's `argc`/`argv` on Windows) |
 | `std/testing` | the test framework |
 
 Stdlib features are plain definitions that become `featureXxx` constants for `#if`: `-DfeatureDefaultAllocator=true` registers the default `alloc` and `free` (`xl` always passes it; a program that registers its own allocator leaves it out by calling `xlc` directly).

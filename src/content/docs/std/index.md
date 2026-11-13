@@ -24,7 +24,7 @@ The standard library is written in xlang and lives in its own repository, [`hasi
 - `std/math`: integer and float helpers, fixed-width big integers, and the geometry types `Vec2`, `Vec3`, `Vec4`, `Rect`, `Mat2`, `Mat3`, `Mat4`, `Quaternion` and `Transform`. See [Mathematics](/std/math/).
 - `std/io`: `print`, `println`, `fprint` and the other output functions, whole-file helpers, directory listing and file status.
 - `std/mem`: `memcpy`, `memmove`, `memset` and `memcmp`, the `Allocator` interface, the default heap and `currentAllocator`.
-- `std/thread`: threads, `Mutex`, `Cond`, `RwLock`, `Once`, and the cooperative scheduler.
+- `std/thread`: threads, `Mutex`, `Cond`, `RwLock`, `Once`.
 - `std/os`: child processes (spawn, pipes, signals, elevation check) and the environment. See [Processes](/std/process/).
 - `std/cpu`, `std/gpu`, `std/hw`: CPU feature flags, GPU device discovery, and hardware facts the OS publishes. See [CPU features](/std/cpu/) and [System information](/std/system/).
 - `std/cloud`: an S3 client. See [Cloud storage](/std/cloud/).

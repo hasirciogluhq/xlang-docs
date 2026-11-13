@@ -79,8 +79,7 @@ register(alloc) fn myAlloc(size: usize, align: usize) -> *void { ... }
 register(free) fn myFree(p: *void) { ... }
 ```
 
-`memcpy`, `malloc` and `free` are not builtins; they are stdlib code in `std/mem`. `String` and `Vec<T>` allocate through `currentAllocator`, not through the registered `alloc`, so replacing the registered roles alone does not redirect them. The scheduler in `std/thread/sched` uses its own heap and is not redirected either.
-
+`memcpy`, `malloc` and `free` are not builtins; they are stdlib code in `std/mem`. `String` and `Vec<T>` allocate through `currentAllocator`, not through the registered `alloc`, so replacing the registered roles alone does not redirect them.
 ## Features
 
 `--std-features` selects what the stdlib includes. Each feature becomes a `featureXxx` constant that `#if` can test, for example `featureDefaultAllocator`. Turning `-default-allocator` off removes the default `alloc` and `free` registrations, so a program must register its own.

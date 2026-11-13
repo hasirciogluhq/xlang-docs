@@ -43,7 +43,7 @@ xl-std/test/e2e/run.sh [xlc]
 ```
 xlc xl-std/test/e2e/runner.xl -M std=xl-std --import std -DfeatureDefaultAllocator=true -o e2e-runner
 ./e2e-runner xlc xl-std xl-std/test/e2e                # <xlc> <stdlib root> <e2e dir> [filter]
-./e2e-runner xlc xl-std xl-std/test/e2e sched          # the entries whose line contains "sched"
+./e2e-runner xlc xl-std xl-std/test/e2e threads        # the entries whose line contains "threads"
 ```
 
 The cross-target legs below and the TLS and HTTPS server/client pairs are run by the shell script `xl-std/test/e2e/run.sh`, which takes the compiler path as its first argument (default `$XLC`, else `xlc` on `PATH`). Each program is cross-built and run on the other targets the host can reach:
@@ -63,7 +63,7 @@ A full run takes a while, because every program is built four times. While worki
 ```
 XLANG_E2E_FILTER=print xl-std/test/e2e/run.sh          # every test whose name contains "print"
 XLANG_E2E_FILTER='^process$' xl-std/test/e2e/run.sh    # exactly one test
-XLANG_E2E_FILTER='^(try|sched)$' xl-std/test/e2e/run.sh
+XLANG_E2E_FILTER='^(try|threads)$' xl-std/test/e2e/run.sh
 XLANG_E2E_FILTER=diag/ xl-std/test/e2e/run.sh          # the compile-time diagnostic cases
 ```
 
