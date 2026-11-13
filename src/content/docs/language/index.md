@@ -157,7 +157,7 @@ const TABLE: [u8; 4] = "abc"       // copied bytes, zero-padded
 
 Every `const` is emitted as read-only data. Assigning to a `const`, or to an element or field of one, is error `E0716`. `&LIMIT` is allowed and yields an ordinary pointer; writing through it is undefined behavior. A block-level `const` is visible only in its block; it cannot be deferred.
 
-Assignment is `target = value` and `target op= value` for `+ - * / % & | ^ << >>`. `x++` and `x--` are statements, not expressions.
+Assignment is `target = value` and `target op= value` for `+ - * / % & | ^ << >>`. The value is computed in full before the target is written, so `p = V(p.x + 1, p.y)` and `p = P { x: p.y, y: p.x }` read the old `p`. `x++` and `x--` are statements, not expressions.
 
 ---
 
