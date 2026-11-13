@@ -101,7 +101,7 @@ export fn add(a: i32, b: i32) -> i32 {
 | `[]T`, `[]mut T` | A non-owning slice: a fat pointer `{ ptr: *T, len: usize }`, the same two words as `str`. `[]mut T` is the writable view (same layout, `mut` is a permission). See [Slices and the iterating `for`](#slices-and-the-iterating-for) |
 | `Name` | A `struct`, `class`, `interface` or `enum` |
 
-There is no owned string type in the language; `String` lives in the standard library. There are no character literals; write the byte value (`97`). `type Name = T` declares a transparent alias.
+There is no owned string type in the language; `String` lives in the standard library. A single byte is written as a byte literal `b'a'` (see [Strings](#strings)). `type Name = T` declares a transparent alias.
 
 Integer literals may be decimal, hexadecimal (`0xff`) or octal (`0o644`, for file modes); a leading `0` alone stays decimal, so `0644` is six hundred forty-four. Float literals look like `1.5` or `1.5e3`; one that does not fit in an `f64` (`1e999`) is an error, never infinity. Escapes in string literals include `\n`, `\0` and `\x1b`.
 
