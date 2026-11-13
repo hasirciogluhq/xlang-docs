@@ -112,7 +112,7 @@ Each entry is one intentional gap or one open decision. Everything not listed he
 - **The router matches linearly:** static routes first, no radix tree, no case-insensitive redirect and no forwarding to another route.
 - **Open HTTP rules:** several differing `Content-Length` values (the first is used) and the absolute-URI and `*` target forms ([HTTP audit](/std/http-audit/)).
 - **The HTTP client is minimal:** no cookie jar, keep-alive, decompression, proxy, IPv6, HTTP/2, `Expect: 100-continue` or streamed request body, and the read timeout covers each read.
-- **TLS 1.3 only:** X25519 with ChaCha20-Poly1305 or AES-128-GCM; no TLS 1.2, resumption, 0-RTT, HelloRetryRequest, AES-256-GCM, client certificates, ALPN or SNI-based virtual hosting.
+- **TLS 1.2 and 1.3, ECDHE with AEAD only (the rustls set):** TLS 1.1 and older, RSA key transport, finite-field DHE, CBC and RC4 suites are not implemented on purpose. TLS 1.3 offers and accepts x25519 key shares only (TLS 1.2 also has P-256 and P-384) and has no HelloRetryRequest; neither version has resumption, 0-RTT, client certificates, ALPN or SNI-based virtual hosting.
 - **TLS server keys:** PKCS#8, PKCS#1 RSA or SEC1 EC (RSA to 4096 bits, P-256, P-384), with no Ed25519 or encrypted keys and a chain of at most 60000 bytes.
 - **Certificate checks:** revocation, nameConstraints, extended key usage, critical extensions, policies and IP SANs are not checked.
 - **Root stores:** macOS reads `/etc/ssl/cert.pem` (not the keychain), Windows reads the `ROOT` store without on-demand roots or policy stores, and the root bundle is cached without a lock.
@@ -140,7 +140,7 @@ Each entry is one intentional gap or one open decision. Everything not listed he
 
 - **Not constant-time:** AES, bignum arithmetic, RSA key generation, ECDSA and secp256k1 signing and TLS server signing branch or index on secret data.
 - **AES modes:** XTS needs whole blocks, and CBC does not pad.
-- **Not implemented on purpose:** AES-CFB, AES-OFB, AES-OCB, DES, RC4, Blowfish, Twofish, Camellia, SM4, ARIA, SEED, CAST5, IDEA, RC2, RC5, RC6, Serpent, Kuznyechik, BLAKE3, RIPEMD, Whirlpool, Tiger, SM3, GOST, Streebog, Argon2, bcrypt, DSA, SM2, OCSP requests, PKCS#8 and PKCS#12 encryption, QUIC and DTLS.
+- **Not implemented on purpose:** AES-CFB, AES-OFB, AES-OCB, DES and 3DES, RC4, Blowfish, Twofish, Camellia, SM4, ARIA, SEED, CAST5, IDEA, RC2, RC5, RC6, Serpent, Kuznyechik, BLAKE3, RIPEMD, Whirlpool, Tiger, SM3, GOST, Streebog, Argon2, bcrypt, DSA, SM2, OCSP requests, PKCS#8 and PKCS#12 encryption, QUIC and DTLS.
 - **Unchecked against vectors:** `concatKdf`, `x963Kdf` and keyed BLAKE2 have no published test vector in the tests.
 - **HKDF rejects BLAKE2:** BLAKE2 has no HMAC block size here.
 - **No streaming HMAC:** `hmac` takes the whole message.

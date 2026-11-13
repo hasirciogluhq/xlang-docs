@@ -60,7 +60,7 @@ routes registered after it, and `Next` runs the rest of the chain.
 | Program | What it shows |
 |---|---|
 | [`examples/blog-api`](https://github.com/hasirciogluhq/xlang/tree/development/examples/blog-api) | JSON REST API, route groups, bearer-token (HS256) authentication, an in-memory store |
-| [`examples/https-server`](https://github.com/hasirciogluhq/xlang/tree/development/examples/https-server) | TLS 1.3 server with a certificate and key from files, JSON responses |
+| [`examples/https-server`](https://github.com/hasirciogluhq/xlang/tree/development/examples/https-server) | TLS 1.2 and 1.3 server with a certificate and key from files, JSON responses |
 | [`examples/certificate-inspect`](https://github.com/hasirciogluhq/xlang/tree/development/examples/certificate-inspect) | PEM certificate fields, chain validation to a root, revocation in a CRL |
 | [`examples/jwt-tool`](https://github.com/hasirciogluhq/xlang/tree/development/examples/jwt-tool) | HS256 sign and verify; RS256, ES256 and EdDSA verification with JWK keys; RFC 7638 thumbprints |
 | [`examples/archive-tool`](https://github.com/hasirciogluhq/xlang/tree/development/examples/archive-tool) | gzip and zlib compression and decompression of files |

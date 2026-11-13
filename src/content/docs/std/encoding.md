@@ -105,7 +105,7 @@ The same module has a `String` layer for callers that hold the text in a `String
 | `jsonMergePatch(target, patch)` | applies a JSON Merge Patch ([RFC 7396](https://www.rfc-editor.org/rfc/rfc7396)): a non-object patch replaces the target, `null` deletes a name |
 | `jsonEqual(a, b)` | value equality as RFC 6902 section 4.6 defines it: object member order is ignored, numbers compare by value (`1`, `1.0` and `10e-1` are equal), strings by code points |
 
-Failures include a missing path, an array index past the end or with a leading zero, a failed `test`, and a `move` into its own child (section 4.4). The tests in `test/e2e/jsonpatch.xl` run the examples of RFC 6902 appendix A and RFC 7396 appendix A.
+Failures include a missing path, an array index past the end or with a leading zero, a failed `test`, and a `move` into its own child (section 4.4). The unit suite `test/unit/jsonpatch.test.xl` runs the examples of RFC 6902 appendix A and RFC 7396 appendix A.
 
 ## Base58, CBOR and Protocol Buffers
 

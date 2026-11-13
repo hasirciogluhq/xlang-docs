@@ -20,6 +20,8 @@ The cryptography modules are in `std/crypto`. Every algorithm names its specific
 | `blake2s(key, klen, data, n, out, outLen)` | 1 to 32 bytes | RFC 7693 |
 | `cshake128`, `cshake256` | any length | NIST SP 800-185, section 3.3 |
 
+SHA-256 and SHA-384/512 also have a streaming state (`Sha256` with `sha256Init` / `sha256Update` / `sha256Final`, `Sha512` with `sha512Init` or `sha384Init`, `sha512Update`, `sha512Final`); a final reads a copy, so the state keeps absorbing and a struct copy snapshots it.
+
 A `digest(alg, data, n, out)` call selects one of these by a `DIGEST_*` id; `digestLen(alg)` and `digestBlockLen(alg)` give the output and block sizes.
 
 ## Message authentication codes
@@ -71,7 +73,7 @@ The AES core (`aes.xl`) supports 16-, 24- and 32-byte keys (FIPS 197). Every mod
 | `concatKdf(alg, z, zlen, info, ilen, out, outLen)` | NIST SP 800-56C one-step; no vector checked yet |
 | `x963Kdf(alg, z, zlen, info, ilen, out, outLen)` | ANSI X9.63 / SEC 1 section 3.6.1; no vector checked yet |
 
-HKDF-Expand-Label of TLS 1.3 is in `std/crypto/hash/hmac` and stays SHA-256 only.
+The TLS derivations (HKDF-Expand-Label of TLS 1.3 and the PRF of TLS 1.2, for SHA-256 and SHA-384) are in `std/tls/keys`; see [TLS](/std/tls/).
 
 ## Key agreement, signatures and X.509
 
@@ -82,7 +84,7 @@ HKDF-Expand-Label of TLS 1.3 is in `std/crypto/hash/hmac` and stays SHA-256 only
 | `ed25519PublicKey(seed, pk)`, `ed25519Sign(seed, msg, mlen, sig)`, `ed25519Verify(pk, msg, mlen, sig)` | RFC 8032, section 5.1. Verified with RFC 8032 test 1; the scalar multiplication is not constant-time |
 | `ecdsaSign`, `ecdsaVerify` (P-256, P-384, P-521 and secp256k1, `ECDSA_SECP256K1`, `ECDSA_P521`) | FIPS 186-4; SEC 2 for secp256k1 |
 | `ecdhPublicKey(curve, d, qx, qy)`, `ecdhShared(curve, d, px, py, out)` (P-256, P-384, P-521 and secp256k1) | NIST SP 800-56A; the peer point is checked to be on the curve |
-| `rsaVerifyPkcs1`, `rsaVerifyPss`, `rsaSignPss` | RFC 8017, sections 8.1 and 8.2 |
+| `rsaVerifyPkcs1`, `rsaVerifyPss`, `rsaSignPkcs1`, `rsaSignPss` | RFC 8017, sections 8.1 and 8.2; PKCS#1 v1.5 signing checked byte for byte against OpenSSL |
 | `rsaEncryptPkcs1`, `rsaDecryptPkcs1` | RFC 8017, section 7.2 (the random padding string is nonzero; prefer OAEP) |
 | `rsaEncryptOaep`, `rsaDecryptOaep` | RFC 8017, section 7.1 with MGF1 (appendix B.2.1); one error for every failure |
 | `mgf1(alg, seed, slen, out, len)` | RFC 8017, appendix B.2.1, any seed length |

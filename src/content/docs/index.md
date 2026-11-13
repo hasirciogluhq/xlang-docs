@@ -10,7 +10,7 @@ Source files use the `.xl` extension. This site is the only documentation source
 
 - **Language**: the language reference (types, statements, control flow, generics, tuple values, attributes, modules, conditional compilation, builtins), plus the smaller pages on classes, `defer`, the entry point and variadic functions.
 - **Compiler**: installing the compiler, linking, packages, the runtime (panic, allocator and unwinding roles), testing, and known limitations.
-- **Standard library**: one page per area (strings, collections, cryptography, mathematics, encodings, compression, archives, files and arguments, HTTP, processes, cloud storage, and so on) and the system call number tables.
+- **Standard library**: one page per area (strings, collections, cryptography, mathematics, encodings, compression, archives, files and arguments, TLS, HTTP, processes, cloud storage, and so on) and the system call number tables.
 
 ## Where things live
 

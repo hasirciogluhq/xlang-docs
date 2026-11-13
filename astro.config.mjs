@@ -77,6 +77,7 @@ export default defineConfig({
             page('std/protocols', 'Network protocol messages'),
             page('std/random', 'Random and identifiers'),
             page('std/event-loop', 'Event polling'),
+            page('std/tls', 'TLS'),
             page('std/http', 'HTTP'),
             page('std/http-audit', 'HTTP audit (RFC 9110, 9112)'),
             page('std/cloud', 'Cloud storage (S3)'),

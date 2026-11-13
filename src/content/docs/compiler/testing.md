@@ -4,6 +4,8 @@ title: Testing
 
 The tests of the standard library live in the `xl-std` repository (`xl-std/test/`) and are built with the standalone compiler `xlc`, which takes the library as a module root (`-M std=<xl-std> --import std -DfeatureDefaultAllocator=true`). There are two suites. The library is also type-checked as a whole: `xlc index.xl --check -DfeatureDefaultAllocator=true [--target <triple>]`.
 
+One rule decides where a test goes: when the code under test reaches an OS-specific call (a syscall or an OS library: files, sockets, processes, clocks, threads, entropy, stdout/stderr, abort, unwinding, the loader), it is an end-to-end program; otherwise it is a unit suite, and only that.
+
 ## Language unit tests (`*.test.xl`)
 
 ```
@@ -28,7 +30,7 @@ fn addWorks(t: *T) { expectEq(t, 1 + 2, 3) }
 
 The matchers are typed functions (`expect`, `expectTrue`, `expectEq`, `expectEqUInt`, `expectEqStr`, `expectNear`, `expectGt`, `expectNil`, ...). There is no discovery and no chained matcher syntax. These suites run on the host only; the cross-OS legs belong to the e2e programs.
 
-The suites `slices.test.xl` and `for_iter.test.xl` cover slices (`[]T`, `[]mut T`, `buffer[lo..hi]`) and the iterating `for` (`for x in s`, `for x, i in s`); the matching e2e program is `for_iter`.
+The suites `slices.test.xl` and `for_iter.test.xl` cover slices (`[]T`, `[]mut T`, `buffer[lo..hi]`) and the iterating `for` (`for x in s`, `for x, i in s`).
 
 ## End-to-end programs
 
@@ -41,7 +43,7 @@ xl-std/test/e2e/run.sh [xlc]
 ```
 xlc xl-std/test/e2e/runner.xl -M std=xl-std --import std -DfeatureDefaultAllocator=true -o e2e-runner
 ./e2e-runner xlc xl-std xl-std/test/e2e                # <xlc> <stdlib root> <e2e dir> [filter]
-./e2e-runner xlc xl-std xl-std/test/e2e raii           # the entries whose line contains "raii"
+./e2e-runner xlc xl-std xl-std/test/e2e sched          # the entries whose line contains "sched"
 ```
 
 The cross-target legs below and the TLS and HTTPS server/client pairs are run by the shell script `xl-std/test/e2e/run.sh`, which takes the compiler path as its first argument (default `$XLC`, else `xlc` on `PATH`). Each program is cross-built and run on the other targets the host can reach:
@@ -59,7 +61,7 @@ A Docker registry failure is reported as a skip, not a failure: `alpine:3` is pu
 A full run takes a while, because every program is built four times. While working on one area, run only what changed:
 
 ```
-XLANG_E2E_FILTER=math_ xl-std/test/e2e/run.sh          # every test whose name contains "math_"
+XLANG_E2E_FILTER=print xl-std/test/e2e/run.sh          # every test whose name contains "print"
 XLANG_E2E_FILTER='^process$' xl-std/test/e2e/run.sh    # exactly one test
 XLANG_E2E_FILTER='^(try|sched)$' xl-std/test/e2e/run.sh
 XLANG_E2E_FILTER=diag/ xl-std/test/e2e/run.sh          # the compile-time diagnostic cases

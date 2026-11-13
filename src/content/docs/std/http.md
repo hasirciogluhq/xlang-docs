@@ -2,7 +2,7 @@
 title: HTTP
 ---
 
-`std/http` has an HTTP/1.1 server and client over plain TCP or TLS 1.3. The parts live next to each other:
+`std/http` has an HTTP/1.1 server and client over plain TCP or TLS 1.2 and 1.3 ([TLS](/std/tls/)). The parts live next to each other:
 
 | File | Contents |
 |---|---|
@@ -11,7 +11,7 @@ title: HTTP
 | `server.xl` | `routerServe` and `routerServeTls`: the connection loop |
 | `middleware.xl` | `Logger`, `Recovery`, `Cors` |
 | `client.xl` | `Client`, `Request`, `Response`: sending, redirects, retries and body framing |
-| `transport.xl` | the `Transport` interface, `NetConn` (TCP or TLS 1.3) and `Wire`, the buffered reader |
+| `transport.xl` | the `Transport` interface, `NetConn` (TCP or TLS) and `Wire`, the buffered reader |
 | `headers.xl` | `Headers` and `Header` |
 | `url.xl` | `Url`, `parseUrl`, `decimal`, and the client's `HttpError` with `errorText` |
 | `multipart.xl` | multipart form parsing |
@@ -88,7 +88,7 @@ The examples on the [Examples](/examples/) page are the routing examples of the 
 
 ## Client
 
-The client speaks HTTP/1.1 ([RFC 9110](https://www.rfc-editor.org/rfc/rfc9110), [RFC 9112](https://www.rfc-editor.org/rfc/rfc9112)) over plain TCP for `http://` and TLS 1.3 for `https://`. Every call returns `Result<Response, HttpError>`: an `Err` means no complete response arrived, and any HTTP status, 4xx and 5xx included, is an `Ok`.
+The client speaks HTTP/1.1 ([RFC 9110](https://www.rfc-editor.org/rfc/rfc9110), [RFC 9112](https://www.rfc-editor.org/rfc/rfc9112)) over plain TCP for `http://` and TLS 1.2 or 1.3 for `https://`. Every call returns `Result<Response, HttpError>`: an `Err` means no complete response arrived, and any HTTP status, 4xx and 5xx included, is an `Ok`.
 
 ```xlang
 from "std" import String, Result, Client, Request, Response, HttpError, errorText, println

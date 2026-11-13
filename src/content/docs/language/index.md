@@ -478,7 +478,7 @@ All of it is in `std/`; `import "std"` or `from "std" import name` brings it in,
 | `std/checksum` | `crc`, `adler`, `fnv` |
 | `std/compress` | `deflate` and `inflate` |
 | `std/crypto` | `hash/` (SHA-1, SHA-2, SHA-3, MD4, MD5, BLAKE2, HMAC and the MAC interface), `cipher/` (AES modes, AES-GCM, ChaCha20-Poly1305, Salsa20), `kdf/` (HKDF, PBKDF2, scrypt), `kex/` (X25519, X448), `sig/` (RSA, ECDSA, Ed25519, Ed448), `x509/` (certificates, CRL, CSR, SPKI, keys, verification), plus `ct` for constant-time comparison |
-| `std/tls` | TLS 1.3 client and server, the trust store and record names |
+| `std/tls` | TLS 1.2 and 1.3 client and server, the trust store and the IANA names |
 | `std/net` | `dns` and the wire protocols under `net/proto/` (IP, DHCP, NTP, MQTT, SOCKS5, STUN, syslog, DNS transport) |
 | `std/http` | the server `Engine`, routes and groups, middleware, `Context`, multipart, URL parsing, and an HTTP client |
 | `std/auth` | JWS, JWT, OAuth and AWS SigV4 |
@@ -536,4 +536,4 @@ Diagnostics have codes: `E` for errors, `W` for warnings (for example `E0501`, `
 
 ## Limitations
 
-Open decisions and intentional incompleteness are recorded in [Known limitations](/known-limitations/) (nested tuple destructuring, no generic constraints, TLS 1.3 only, and so on).
+Open decisions and intentional incompleteness are recorded in [Known limitations](/known-limitations/) (nested tuple destructuring, no generic constraints, no TLS older than 1.2, and so on).

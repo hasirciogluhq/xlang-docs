@@ -20,7 +20,7 @@ The standard library is written in xlang and lives in its own repository, [`hasi
 - `std/net/proto`: NTP, syslog and SOCKS5 messages. See [Network protocol messages](/std/protocols/).
 - `std/crypto`: SHA-1, SHA-2, SHA-3, MD4, MD5, BLAKE2, HMAC and the MAC interface; AES modes (CBC, CTR, ECB, CCM, XTS), AES-GCM, ChaCha20-Poly1305 and Salsa20; HKDF, PBKDF2 and scrypt; X25519 and X448; RSA, ECDSA, Ed25519 and Ed448; X.509, CRL, CSR, SPKI and key parsing. See [Cryptography](/std/crypto/).
 - `std/checksum`: CRC-32, CRC-32C, Adler-32 and FNV-1 and FNV-1a. See [Encodings](/std/encoding/).
-- `std/net`, `std/tls`, `std/http`: sockets, TLS 1.3, and the HTTP server and client. See [HTTP](/std/http/) and [Event polling](/std/event-loop/).
+- `std/net`, `std/tls`, `std/http`: sockets, TLS 1.2 and 1.3, and the HTTP server and client. See [TLS](/std/tls/), [HTTP](/std/http/) and [Event polling](/std/event-loop/).
 - `std/math`: integer and float helpers, fixed-width big integers, and the geometry types `Vec2`, `Vec3`, `Vec4`, `Rect`, `Mat2`, `Mat3`, `Mat4`, `Quaternion` and `Transform`. See [Mathematics](/std/math/).
 - `std/io`: `print`, `println`, `fprint` and the other output functions, whole-file helpers, directory listing and file status.
 - `std/mem`: `memcpy`, `memmove`, `memset` and `memcmp`, the `Allocator` interface, the default heap and `currentAllocator`.
