@@ -12,6 +12,7 @@ xl build [flags] [file.xl]           build an executable (or what --emit asks fo
 xl check [flags] [file.xl]           type-check without writing anything
 xl test [flags] [patterns...]        build and run the *.test.xl files, several at a time
 xl env [--json] [file.xl]            the compiler, stdlib and module roots a build of the file uses
+xl fmt [flags] [paths...]            format the .xl files under the paths in place
 xl pkg <command>                     packages: add, install, update, remove, list, clean
 xl lc <command>                      the compiler: install, update, list, use, remove, clean
 xl std <command>                     the standard library: install, update, list, use, remove, clean
@@ -20,6 +21,30 @@ xl version                           print the version
 ```
 
 `xl <command> --help` describes a command. Installing `xl` and the toolchain: [Install](/compiler/install/). Packages and `xlang.local.toml`: [Packages](/compiler/packages/).
+
+## Formatting: `fmt`
+
+```bash
+xl fmt                    # every .xl file under the current directory, in place
+xl fmt src/ tool.xl       # the files of a directory, and one file
+xl fmt --check            # exit 1 and name the files a format would change; writes nothing
+xl fmt --diff             # print the changes a format would make; writes nothing
+xl fmt --stdin            # format standard input to standard output
+xl fmt --indent 2         # the indent width, 1..16
+```
+
+A format writes every line at its brace depth, collapses runs of inner whitespace to one space and blank lines to one, and keeps `//` comments on their lines with their text verbatim. Operator spacing is the author's and long lines are not reflowed; a format never adds, drops or reorders a token, so it is safe on code that does not compile yet, and formatting twice is formatting once.
+
+The indent comes from the `[fmt]` table of the project's `xlang.toml`:
+
+```toml
+[fmt]
+indent = 4
+```
+
+The table is forward compatible: unknown keys and tables are ignored, and a missing file or table means the defaults. `--indent` overrides the file.
+
+Without paths the `.xl` files under the current directory are formatted, skipping `.xlang`, `build` and `node_modules` and every hidden directory. The exit status is 1 when `--check` finds a file that would change.
 
 ## Scaffolding: `new`, `init`
 

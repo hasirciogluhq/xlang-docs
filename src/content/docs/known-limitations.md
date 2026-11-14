@@ -86,6 +86,7 @@ Each entry is one intentional gap or one open decision. Everything not listed he
 ## The `xl` tool
 
 - **`xl new` asks with a line prompt:** the main-or-lib question reads one line from the terminal; there is no up-down menu, because the stdlib has no raw terminal mode (termios on Unix, console input on Windows).
+- **`xl fmt` is token-level:** it re-indents by brace depth and normalizes whitespace, but does not reflow long lines and does not normalize operator spacing (a unary `-` and a binary one are not told apart without a parser); an AST formatter in the compiler is a later step.
 
 ## Testing
 
