@@ -63,11 +63,15 @@ xl lc install      # the newest compiler, made active
 xl lc update       # the newest compiler, made active
 xl lc list         # installed compilers, * = active
 xl lc use v1.0.0   # switch between installed compilers
+xl lc remove v0.9.0 # remove an installed compiler, never the active one
+xl lc clean        # remove every installed compiler but the active one
 
 xl std install      # the newest stdlib, made active
 xl std update       # the newest stdlib, made active
 xl std list         # installed stdlibs, * = active
 xl std use v1.2.2   # switch between installed stdlibs
+xl std remove v1.1.0 # remove an installed stdlib, never the active one
+xl std clean        # remove every installed stdlib but the active one
 ```
 
 Compilers and stdlibs are installed per user, never system-wide, several versions side by side:

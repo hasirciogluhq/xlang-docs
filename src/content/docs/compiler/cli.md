@@ -13,8 +13,8 @@ xl check [flags] [file.xl]           type-check without writing anything
 xl test [flags] [patterns...]        build and run the *.test.xl files, several at a time
 xl env [--json] [file.xl]            the compiler, stdlib and module roots a build of the file uses
 xl pkg <command>                     packages: add, install, update, remove, list, clean
-xl lc <command>                      the compiler: install, update, list, use
-xl std <command>                     the standard library: install, update, list, use
+xl lc <command>                      the compiler: install, update, list, use, remove, clean
+xl std <command>                     the standard library: install, update, list, use, remove, clean
 xl self-update [--check] [--force]   replace this xl with the newest release
 xl version                           print the version
 ```
@@ -45,7 +45,7 @@ xl run -- --port 8080             # main.xl, with arguments that look like flags
 ```
 
 - **The file.** The program root is the `.xl` file named on the command line. Without one, `main.xl` of the project root (the directory of the nearest `xlang.toml` above the current directory) is used, then `main.xl` of the current directory. A missing file is `E0711`.
-- **Flags** are the compiler's own (`xlc --help`: `-O2`, `-o out`, `--emit=obj`, `-D NAME=VALUE`, `--target`, `--safety`, ...) and pass through unchanged, in order. `--std=<dir>` is xl's: it replaces the stdlib for this call (see [the build environment](#the-build-environment)). `check` and `build` take flags before and after the file, and pass any other argument to the compiler as a prebuilt object or library to link (`xl build app.xl vendor/libz.a`); see [Linking](/compiler/linking/).
+- **Flags** are the compiler's own (`xlc --help`: `-O2`, `-o out`, `--emit=obj`, `-D NAME=VALUE`, `--target`, `--safety`, `--crt`, `--link-arg=...`, ...) and pass through unchanged, in order. `--std=<dir>` is xl's: it replaces the stdlib for this call (see [the build environment](#the-build-environment)). `check` and `build` take flags before and after the file, and pass any other argument to the compiler as a prebuilt object or library to link (`xl build app.xl vendor/libz.a`); see [Linking](/compiler/linking/).
 - **`run`** builds the program into a private temporary directory (`$TMPDIR`, `%TEMP%` on Windows), runs it with the remaining arguments and removes the directory afterwards. Everything after the file, or after `--`, belongs to the program, so `xl run app.xl --help` passes `--help` to `app`. The program's exit status becomes xl's; a failed compile returns the compiler's status.
 - **No network.** Builds read `xlang.lock` and `.xlang/cache` only. A package that is not in the cache is `E0741` with the fix `run xl pkg install`.
 - `XL_VERBOSE=1` prints the full `xlc` command line before running it.
