@@ -5,7 +5,7 @@ title: Processes
 `std/os/process` starts and controls child processes on Linux, macOS and Windows (x86-64 and arm64). `std/os/env` reads and builds environments, and `std/io/stream` gives the buffered pipe type `Stream`. The OS calls live in `std/sys/spawn`; the numbers and layouts are recorded in [System calls](/std/syscalls/).
 
 ```xlang
-from "std" import String, optionIsSome, print
+from "std" import String, print
 from "std/os/process" import Command, Stdio
 
 @entry fn main() -> i32 {
@@ -13,7 +13,7 @@ from "std/os/process" import Command, Stdio
     git.arg(String("status"))
     git.arg(String("--short"))
     git.cwd(String("/work"))
-    if optionIsSome(git.output()) { return 1 }   // the child could not start
+    if git.output().isSome() { return 1 }   // the child could not start
     print(&git.outText)                           // git.status.code is its exit status
     return 0
 }
