@@ -146,7 +146,7 @@ Without a terminal to ask on, `uninstall.sh` stops unless `--yes` or `--list` is
 ```bash
 git clone --recurse-submodules https://github.com/hasirciogluhq/xlang
 cd xlang/src
-xlc main.xl -M std=../xl-std --import std -DfeatureDefaultAllocator=true '-DxlVersion="1.0.0-dev"' -O2 -o ../xl
+xlc main.xl -M std=../xl-std/src --import std -DfeatureDefaultAllocator=true '-DxlVersion="1.0.0-dev"' -O2 -o ../xl
 ```
 
 Without `-DxlVersion` the binary reports `0.0.0-dev`. The tests are `test/run.sh <xl> <xlc> xl-std` ([Testing](/compiler/testing/#the-xl-tool)).

@@ -2,7 +2,7 @@
 title: Testing
 ---
 
-The tests of the standard library live in the `xl-std` repository (`xl-std/test/`) and are built with the standalone compiler `xlc`, which takes the library as a module root (`-M std=<xl-std> --import std -DfeatureDefaultAllocator=true`). There are two suites. The library is also type-checked as a whole: `xlc index.xl --check -DfeatureDefaultAllocator=true [--target <triple>]`.
+The tests of the standard library live in the `xl-std` repository (`xl-std/test/`) and are built with the standalone compiler `xlc`, which takes the library as a module root (`-M std=<xl-std>/src --import std -DfeatureDefaultAllocator=true`). There are two suites. The library is also type-checked as a whole: `xlc src/index.xl --check -DfeatureDefaultAllocator=true [--target <triple>]`, run from the root of that repository.
 
 One rule decides where a test goes: when the code under test reaches an OS-specific call (a syscall or an OS library: files, sockets, processes, clocks, threads, entropy, stdout/stderr, abort, unwinding, the loader), it is an end-to-end program; otherwise it is a unit suite, and only that.
 
@@ -41,9 +41,9 @@ xl-std/test/e2e/run.sh [xlc]
 `xl-std/test/e2e/` holds one `.xl` program per feature. Besides `run.sh` (below), the runner `xl-std/test/e2e/runner.xl` is itself an xlang program. It reads the table `tests.txt` (`run|name|exit code|output substring` and `diag|name|flag|diagnostic code or ok`), builds each program with the compiler under test, runs it with `Command.output()` from `std/os/process` (see [Processes](/std/process/)), and checks the exit code and one substring of the output. It runs natively on Linux and macOS, one entry at a time, and takes an optional name filter (a plain substring of the table line):
 
 ```
-xlc xl-std/test/e2e/runner.xl -M std=xl-std --import std -DfeatureDefaultAllocator=true -o e2e-runner
-./e2e-runner xlc xl-std xl-std/test/e2e                # <xlc> <stdlib root> <e2e dir> [filter]
-./e2e-runner xlc xl-std xl-std/test/e2e threads        # the entries whose line contains "threads"
+xlc xl-std/test/e2e/runner.xl -M std=xl-std/src --import std -DfeatureDefaultAllocator=true -o e2e-runner
+./e2e-runner xlc xl-std/src xl-std/test/e2e                # <xlc> <stdlib root> <e2e dir> [filter]
+./e2e-runner xlc xl-std/src xl-std/test/e2e threads        # the entries whose line contains "threads"
 ```
 
 The cross-target legs below and the TLS and HTTPS server/client pairs are run by the shell script `xl-std/test/e2e/run.sh`, which takes the compiler path as its first argument (default `$XLC`, else `xlc` on `PATH`). Each program is cross-built and run on the other targets the host can reach:

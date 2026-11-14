@@ -143,7 +143,7 @@ One developer's overrides for one checkout, next to `xlang.toml` and never commi
 ```toml
 [toolchain]
 xlc = "../xlc/build/macosx/arm64/release/xlc"   # a compiler binary in place of the installed one
-std = "../xl-std"                               # a stdlib directory in place of the installed one
+std = "../xl-std/src"                           # a stdlib directory in place of the installed one (root = "src")
 
 [modules]
 "github.com/user/repo" = "../repo"              # a checkout in place of a package, or one more module root
