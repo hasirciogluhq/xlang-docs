@@ -31,13 +31,13 @@ Every release of `xl`, stable or pre-release, carries `install.sh` and `install.
 macOS and Linux:
 
 ```bash
-curl -fsSL https://github.com/hasirciogluhq/xlang/releases/download/v1.0.0-rc.9/install.sh | bash
+curl -fsSL https://github.com/hasirciogluhq/xlang/releases/download/v1.0.0-rc.10/install.sh | bash
 ```
 
 Windows (PowerShell):
 
 ```powershell
-irm https://github.com/hasirciogluhq/xlang/releases/download/v1.0.0-rc.9/install.ps1 | iex
+irm https://github.com/hasirciogluhq/xlang/releases/download/v1.0.0-rc.10/install.ps1 | iex
 ```
 
 The scripts:
