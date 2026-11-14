@@ -46,15 +46,15 @@ The scripts:
 2. Find the requested release of `xl` (`--version`, below).
 3. Download the archive and `checksums.txt`, and stop when the SHA-256 differs or the list has no entry for the archive.
 4. Run the new binary with `version`, then move it into place: `~/.local/bin/xl` (`%LOCALAPPDATA%\xlang\bin\xl.exe` on Windows, which is added to the user `PATH`).
-5. Run `xl lc install` and `xl std install`, which install the newest compiler and stdlib (below).
+
+The scripts install nothing but `xl`. The compiler and the stdlib are installed afterwards by hand: `xl lc install` and `xl std install` (below).
 
 | Option (`install.sh`) | Environment variable | Meaning |
 |-----------------------|----------------------|---------|
 | `--version <v>` | `XL_VERSION` | `xl` release to install. `latest` (default): the newest stable release, or the newest pre-release while there is no stable one. `latest-stable`: the newest stable release. `latest-rc`: the newest pre-release. A tag (`v1.0.0`, `1.0.0-rc.1`): that release. |
 | `--dir <path>` | `XL_INSTALL_DIR` | Install directory. Default: `$HOME/.local/bin`. |
-| `--no-toolchain` | `XL_NO_TOOLCHAIN=1` | Do not run `xl lc install` and `xl std install`. |
 
-Pass options through a pipe with `bash -s --`, for example `curl -fsSL <url> | bash -s -- --version latest-rc`. `install.sh` needs `curl`, `tar` and `sha256sum` or `shasum`. `install.ps1` reads `XL_VERSION`, `XL_INSTALL_DIR` and `XL_NO_TOOLCHAIN` the same way.
+Pass options through a pipe with `bash -s --`, for example `curl -fsSL <url> | bash -s -- --version latest-rc`. `install.sh` needs `curl`, `tar` and `sha256sum` or `shasum`. `install.ps1` reads `XL_VERSION` and `XL_INSTALL_DIR` the same way.
 
 ## The toolchain: `xl lc` and `xl std`
 
