@@ -2,9 +2,11 @@
 title: The xl tool
 ---
 
-`xl` is the one command a user runs. It installs the compiler (`xl lc`) and the standard library (`xl std`), manages packages (`xl pkg`), builds and runs programs through the compiler `xlc` (`xl check`, `xl build`, `xl run`), runs test files (`xl test`), reports what a build would use (`xl env`) and updates itself (`xl self-update`). `xl` is written in xlang; its sources are `src/` of the xlang repository.
+`xl` is the one command a user runs. It scaffolds a new project (`xl new`, `xl init`), installs the compiler (`xl lc`) and the standard library (`xl std`), manages packages (`xl pkg`), builds and runs programs through the compiler `xlc` (`xl check`, `xl build`, `xl run`), runs test files (`xl test`), reports what a build would use (`xl env`) and updates itself (`xl self-update`). `xl` is written in xlang; its sources are `src/` of the xlang repository.
 
 ```
+xl new <name> [main|lib]             a new project in <name>/ (`xl new lib`: a library in lib/)
+xl init [main|lib]                   a new project in the current directory
 xl run [flags] [file.xl] [args...]   build and run a program; arguments after the file go to it
 xl build [flags] [file.xl]           build an executable (or what --emit asks for)
 xl check [flags] [file.xl]           type-check without writing anything
@@ -18,6 +20,20 @@ xl version                           print the version
 ```
 
 `xl <command> --help` describes a command. Installing `xl` and the toolchain: [Install](/compiler/install/). Packages and `xlang.local.toml`: [Packages](/compiler/packages/).
+
+## Scaffolding: `new`, `init`
+
+```bash
+xl new hello          # an executable project in hello/: xlang.toml, src/main.xl, .gitignore
+xl new mylib lib      # a library project in mylib/: xlang.toml, src/lib.xl, src/index.xl, .gitignore
+xl init               # the same, in the current directory (its name is the directory's name)
+xl init lib           # a library project in the current directory
+```
+
+- **The kind.** `main` (an executable, the default) writes `src/main.xl`; `lib` (a package others import) writes `src/lib.xl` and an `index.xl` that re-exports it. Both write an `xlang.toml` with `[package] root = "src"` and a `.gitignore` that ignores `.xlang/`. Without a kind and with a terminal, `xl` asks `main or lib?`; without a terminal (a script, CI) the kind is `main`.
+- **Nothing is overwritten.** A directory that already has an `xlang.toml`, or a `src/main.xl`, `src/lib.xl` or `src/index.xl`, is refused (`E0740`), and nothing is written. `new` also refuses an existing directory that is not empty; `init` works in place by definition.
+- **`xl run` finds the program.** Without a file, `xl run`, `xl build` and `xl check` use `main.xl` of the project root, then `main.xl` of its `[package] root` — the scaffolded `src/main.xl` — then `main.xl` of the current directory.
+- **Next steps.** An executable runs with `xl run`. A library is pushed as a repository and added to a project with `xl pkg add <host/user/repo>` ([Packages](/compiler/packages/)).
 
 ## Building: `check`, `build`, `run`
 

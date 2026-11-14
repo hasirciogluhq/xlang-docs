@@ -83,6 +83,10 @@ Each entry is one intentional gap or one open decision. Everything not listed he
 - **Allocator replacement is not tracked per block:** after `currentAllocator = v`, a block allocated before is freed through `v`, and a user `alloc` without a user `free` frees through the stdlib `free`.
 - **`stdin()` is not thread-safe:** the shared `Stream` and its buffer have no lock.
 
+## The `xl` tool
+
+- **`xl new` asks with a line prompt:** the main-or-lib question reads one line from the terminal; there is no up-down menu, because the stdlib has no raw terminal mode (termios on Unix, console input on Windows).
+
 ## Testing
 
 - **No test discovery:** a test file registers its tests with `test(&s, "name", fn)` and returns `suiteRun`.
