@@ -39,7 +39,7 @@ Design points:
 - Direct control: raw pointers, `syscall`, inline assembly and atomics are part of the language; higher-level APIs are opt-in imports.
 - Generics on functions, structs, classes, interfaces, aliases and class methods (no constraints).
 - Safety: `*T` is unchecked; array indexing is bounds-checked by default (`--safety=checked`) and can be switched off with `--safety=unchecked`.
-- No borrow checker, no garbage collector, no exceptions.
+- No garbage collector, no exceptions.
 
 ---
 
@@ -192,7 +192,7 @@ for b in "abcd" { ... }             // str walks bytes, b: u8
 
 - The brackets hold a range: `[..]`, `[lo..hi]`, `[lo..]`, `[..hi]` (upper bound excluded). Slicing a non-byte array or an existing slice yields a slice of its element type. A slice is writable (`[]mut T`) only when the owner is a writable place and not `const`; otherwise it is `[]T`. Slicing `str` or `[u8; N]` yields a `str`.
 - `.len` is the number of elements and `.ptr` the data pointer (`*T`). Indexing is bounds-checked under `--safety=checked`. Writing an element (`s[i] = v`) needs a `[]mut T`: on a read-only `[]T` it is `E0716` ("cannot write through a read-only slice"). A `[]mut T` element is a place; a `[]T` element reads through the view.
-- `[]mut T` marks a writable view only. It is what a read-only `[]T` must be upcast to in order to write; the reverse (`[]mut T` to `[]T`) is implicit and free. There is no borrow checker, so `mut` is not an aliasing or lifetime guarantee: two views of the same bytes may exist.
+- `[]mut T` marks a writable view only. It is what a read-only `[]T` must be upcast to in order to write; the reverse (`[]mut T` to `[]T`) is implicit and free. `mut` is not an aliasing or lifetime guarantee: two views of the same bytes may exist.
 - A `for x in s` element is a pointer into the storage, so nothing is copied and `x.field = v` writes the owner. The bound is read once, before the first turn. `break`, `continue` and a label behave as in the other `for` forms. The form is a compiler lowering to an index loop, not a method call.
 - A slice cannot be a field of an `@repr(c)` struct and cannot cross an `export(c)` boundary (C has no fat pointer).
 
