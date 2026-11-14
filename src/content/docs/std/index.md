@@ -2,7 +2,7 @@
 title: Standard library
 ---
 
-The standard library is written in xlang and lives in its own repository, [`hasirciogluhq/xl-std`](https://github.com/hasirciogluhq/xl-std). `xl lc install` installs a release per user, and every `xl` build passes it to the compiler as the module root `std` (see [The xl tool](/compiler/cli/#the-build-environment)). A program imports it with `from "std" import ...`, or a module by path, for example `from "std/str" import replace`.
+The standard library is written in xlang and lives in its own repository, [`hasirciogluhq/xl-std`](https://github.com/hasirciogluhq/xl-std). `xl std install` installs a release per user, and every `xl` build passes it to the compiler as the module root `std` (see [The xl tool](/compiler/cli/#the-build-environment)). A program imports it with `from "std" import ...`, or a module by path, for example `from "std/str" import replace`.
 
 ## Modules
 

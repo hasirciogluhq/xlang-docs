@@ -2,7 +2,7 @@
 title: The xl tool
 ---
 
-`xl` is the one command a user runs. It installs the compiler and the standard library (`xl lc`), manages packages (`xl pkg`), builds and runs programs through the compiler `xlc` (`xl check`, `xl build`, `xl run`), runs test files (`xl test`), reports what a build would use (`xl env`) and updates itself (`xl self-update`). `xl` is written in xlang; its sources are `src/` of the xlang repository.
+`xl` is the one command a user runs. It installs the compiler (`xl lc`) and the standard library (`xl std`), manages packages (`xl pkg`), builds and runs programs through the compiler `xlc` (`xl check`, `xl build`, `xl run`), runs test files (`xl test`), reports what a build would use (`xl env`) and updates itself (`xl self-update`). `xl` is written in xlang; its sources are `src/` of the xlang repository.
 
 ```
 xl run [flags] [file.xl] [args...]   build and run a program; arguments after the file go to it
@@ -11,7 +11,8 @@ xl check [flags] [file.xl]           type-check without writing anything
 xl test [flags] [patterns...]        build and run the *.test.xl files, several at a time
 xl env [--json] [file.xl]            the compiler, stdlib and module roots a build of the file uses
 xl pkg <command>                     packages: add, install, update, remove, list, clean
-xl lc <command>                      the compiler toolchain: install, update, list, use
+xl lc <command>                      the compiler: install, update, list, use
+xl std <command>                     the standard library: install, update, list, use
 xl self-update [--check] [--force]   replace this xl with the newest release
 xl version                           print the version
 ```
@@ -88,7 +89,7 @@ The compiler, the stdlib, the package roots and the extra flags of a file come f
 
 | Layer | Sets | Source |
 |-------|------|--------|
-| 1. The active toolchain | compiler, stdlib | `$XLANG_HOME/toolchain.toml` (`xlc = "<tag>"`, `std = "<tag>"`), written by `xl lc` |
+| 1. The active toolchain | compiler, stdlib | `$XLANG_HOME/toolchain.toml` (`xlc = "<tag>"`, `std = "<tag>"`), written by `xl lc` and `xl std` |
 | 2. `xlang.toml` | package roots | each `xlang.lock` entry maps to `.xlang/cache/<repository>@<tag>`, each `path` dependency to its directory |
 | 3. `xlang.local.toml` | compiler, stdlib, package roots, flags | `[toolchain] xlc/std`, `[modules]`, `[build] flags` ([Packages](/compiler/packages/#xlanglocaltoml)) |
 | 4. Environment | compiler, stdlib | `$XLC` (a compiler binary), `$XLANG_STD` (a stdlib directory) |

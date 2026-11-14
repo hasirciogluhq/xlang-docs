@@ -525,6 +525,7 @@ xl check [flags] [file.xl]
 xl env [--json] [file.xl]
 xl pkg add|install|update|remove|list|clean
 xl lc install|update|list|use
+xl std install|update|list|use
 xl self-update [--check] [--force]
 ```
 

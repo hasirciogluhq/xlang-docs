@@ -46,24 +46,28 @@ The scripts:
 2. Find the requested release of `xl` (`--version`, below).
 3. Download the archive and `checksums.txt`, and stop when the SHA-256 differs or the list has no entry for the archive.
 4. Run the new binary with `version`, then move it into place: `~/.local/bin/xl` (`%LOCALAPPDATA%\xlang\bin\xl.exe` on Windows, which is added to the user `PATH`).
-5. Run `xl lc install`, which installs the newest compiler and stdlib (below).
+5. Run `xl lc install` and `xl std install`, which install the newest compiler and stdlib (below).
 
 | Option (`install.sh`) | Environment variable | Meaning |
 |-----------------------|----------------------|---------|
 | `--version <v>` | `XL_VERSION` | `xl` release to install. `latest` (default): the newest stable release, or the newest pre-release while there is no stable one. `latest-stable`: the newest stable release. `latest-rc`: the newest pre-release. A tag (`v1.0.0`, `1.0.0-rc.1`): that release. |
 | `--dir <path>` | `XL_INSTALL_DIR` | Install directory. Default: `$HOME/.local/bin`. |
-| `--no-toolchain` | `XL_NO_TOOLCHAIN=1` | Do not run `xl lc install`. |
+| `--no-toolchain` | `XL_NO_TOOLCHAIN=1` | Do not run `xl lc install` and `xl std install`. |
 
 Pass options through a pipe with `bash -s --`, for example `curl -fsSL <url> | bash -s -- --version latest-rc`. `install.sh` needs `curl`, `tar` and `sha256sum` or `shasum`. `install.ps1` reads `XL_VERSION`, `XL_INSTALL_DIR` and `XL_NO_TOOLCHAIN` the same way.
 
-## The toolchain: `xl lc`
+## The toolchain: `xl lc` and `xl std`
 
 ```bash
-xl lc install                 # the newest compiler and stdlib, made active
-xl lc install v1.0 --std=v1.2 # the newest v1.0.x compiler and v1.2.x stdlib
-xl lc update                  # the newest of both, made active
-xl lc list                    # installed releases, * = active
-xl lc use v1.0.0 --std=v1.2.2 # switch between installed releases
+xl lc install      # the newest compiler, made active
+xl lc update       # the newest compiler, made active
+xl lc list         # installed compilers, * = active
+xl lc use v1.0.0   # switch between installed compilers
+
+xl std install      # the newest stdlib, made active
+xl std update       # the newest stdlib, made active
+xl std list         # installed stdlibs, * = active
+xl std use v1.2.2   # switch between installed stdlibs
 ```
 
 Compilers and stdlibs are installed per user, never system-wide, several versions side by side:
@@ -77,7 +81,7 @@ $XLANG_HOME/toolchain.toml         xlc = "<tag>"  std = "<tag>": the active pair
 `$XLANG_HOME` defaults to `~/.xlang` (`%USERPROFILE%\.xlang` on Windows). No root rights are needed.
 
 - Without a tag, the newest stable release is taken, or the newest pre-release while the repository has no stable one. A tag may be partial: `v1` is the newest `v1.x.x`, `v1.2` the newest `v1.2.x`.
-- `install` without `--std` also installs the newest stdlib. A release that is already installed is not downloaded again.
+- A release that is already installed is not downloaded again.
 - Every asset is checked against its release's `checksums.txt` before it is unpacked (`E0792`); a compiler is run once with `--version` before it is moved into place (`E0793`).
 - Release tags are read with `git ls-remote`, so `git` must be on `PATH`; assets are downloaded with the stdlib's HTTPS client.
 - `$XLANG_MIRROR` replaces GitHub with a directory laid out as `<mirror>/<owner>/<repository>/<tag>/<asset>`, for machines without access to GitHub (the tag directories are the release list).
@@ -101,7 +105,7 @@ The command lists the releases of `hasirciogluhq/xlang` and compares the newest 
 - A binary under Homebrew's `Cellar` is refused (`E0793`): the package manager owns it.
 - A directory that is not writable fails with the path (`E0793`); a network failure or an unknown tag is `E0791`.
 
-The compiler and the stdlib are updated with `xl lc update`, not by `self-update`.
+The compiler and the stdlib are updated with `xl lc update` and `xl std update`, not by `self-update`.
 
 ## Uninstall
 
